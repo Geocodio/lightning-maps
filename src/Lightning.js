@@ -1,7 +1,7 @@
 import TileConversion from './TileConversion';
 import Tile from './Tile';
 
-const DEBOUNCE_INTERVAL_MS = 1000;
+const DEBOUNCE_INTERVAL_MS = 500;
 
 export default class Lightning {
   constructor(canvas) {
@@ -70,6 +70,7 @@ export default class Lightning {
 
   getHorizontalTiles() {
     let horizontalTiles = Math.ceil(this.canvasDimensions[0] / this.tileDimensions[0]);
+
     if (horizontalTiles % 2 === 0) {
       horizontalTiles++;
     }
@@ -79,6 +80,7 @@ export default class Lightning {
 
   getVerticalTiles() {
     let verticalTiles = Math.ceil(this.canvasDimensions[1] / this.tileDimensions[1]);
+
     if (verticalTiles % 2 === 0) {
       verticalTiles++;
     }
@@ -117,8 +119,6 @@ export default class Lightning {
     this.context.globalCompositeOperation = 'destination-over';
     this.context.clearRect(0, 0, this.canvasDimensions[0], this.canvasDimensions[1]);
     this.context.strokeStyle = 'green';
-    //this.context.fillStyle = '#eeeeee';
-    //this.context.fillRect(0, 0, this.canvasDimensions[0], this.canvasDimensions[1]);
 
     const horizontalTiles = this.getHorizontalTiles();
     const verticalTiles = this.getVerticalTiles();
