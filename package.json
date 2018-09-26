@@ -1,0 +1,48 @@
+{
+  "name": "lightning-maps",
+  "version": "0.0.1",
+  "description": "Produce universal library with webpack and es6",
+  "main": "lib/lightning-maps.js",
+  "scripts": {
+    "build": "webpack --env dev && webpack --env build && npm run test",
+    "dev": "webpack --progress --colors --watch --env dev",
+    "test": "mocha --require babel-register --colors ./test/*.spec.js",
+    "test:watch": "mocha --require babel-register --colors -w ./test/*.spec.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/geocodio/lightning-maps.git"
+  },
+  "keywords": [
+    "maps",
+    "mapping",
+    "osm",
+    "openstreetmap"
+  ],
+  "author": "Mathias Hansen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/geocodio/lightning-maps/issues"
+  },
+  "homepage": "https://github.com/geocodio/lightning-maps",
+  "devDependencies": {
+    "@babel/cli": "^7.0.0-beta.51",
+    "@babel/core": "^7.0.0-beta.51",
+    "@babel/preset-env": "^7.0.0-beta.51",
+    "babel-eslint": "^8.0.3",
+    "babel-loader": "^8.0.0-beta.4",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-preset-env": "^7.0.0-beta.3",
+    "babel-register": "^7.0.0-beta.3",
+    "chai": "^4.1.2",
+    "eslint": "^5.0.1",
+    "eslint-loader": "^2.0.0",
+    "jsdom": "11.11.0",
+    "jsdom-global": "3.0.2",
+    "mocha": "^4.0.1",
+    "uglifyjs-webpack-plugin": "^1.2.7",
+    "webpack": "^4.12.2",
+    "webpack-cli": "^3.0.8",
+    "yargs": "^10.0.3"
+  }
+}
