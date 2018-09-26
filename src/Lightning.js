@@ -1,6 +1,8 @@
 import TileConversion from './TileConversion';
 import Tile from './Tile';
 
+const DEBOUNCE_INTERVAL_MS = 1000;
+
 export default class Lightning {
   constructor(canvas) {
     if (!canvas || !canvas.getContext) {
@@ -9,18 +11,24 @@ export default class Lightning {
 
     this.draw = this.draw.bind(this);
 
-    this.context = canvas.getContext('2d');
+    this.canvas = canvas;
+    this.context = this.canvas.getContext('2d');
     this.canvasDimensions = [canvas.width, canvas.height];
     this.tiles = {};
     this.tileDimensions = [256, 256];
 
     this.debug = false;
 
+    this.attachEvents();
+
     window.requestAnimationFrame(this.draw);
   }
 
   setZoom(zoom) {
-    this.zoom = zoom;
+    if (zoom >= 1 && zoom <= 18) {
+      this.zoom = zoom;
+    }
+
     return this;
   }
 
@@ -32,6 +40,32 @@ export default class Lightning {
   setSource(source) {
     this.source = source;
     return this;
+  }
+
+  isReadyForEvent() {
+    if (!this.lastEventActionTime) {
+      return true;
+    }
+
+    const now = new Date().getTime();
+
+    return now - this.lastEventActionTime > DEBOUNCE_INTERVAL_MS;
+  }
+
+  attachEvents() {
+    this.canvas.addEventListener('wheel', event => {
+      if (this.isReadyForEvent()) {
+        if (event.deltaY > 5) {
+          this.lastEventActionTime = new Date().getTime();
+          this.setZoom(this.zoom - 2);
+        } else if (event.deltaY < -5) {
+          this.lastEventActionTime = new Date().getTime();
+          this.setZoom(this.zoom + 2);
+        }
+      }
+
+      return false;
+    });
   }
 
   getHorizontalTiles() {
