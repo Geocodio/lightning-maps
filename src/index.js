@@ -1,2 +1,2 @@
-import Lightning from './Lightning.js';
-export default Lightning;
+import Lightning from './Lightning';
+export { Lightning };

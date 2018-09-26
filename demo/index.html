@@ -9,12 +9,15 @@
     <noscript>
       You need to enable JavaScript to run this app.
     </noscript>
-    <canvas id="map"></canvas>
-    <script src="../lightning-maps.js"></script>
+    <canvas id="map" width="800" height="600"></canvas>
+    <script src="../lib/lightning-maps.js"></script>
     <script>
     new Lightning(document.getElementById('map'))
-    	.setZoom(10)
-    	.setCenter([31.434703, -99.281824]);
+      .setSource(function (x, y, z) {
+        return `https://maps.geocod.io/tiles/base/${z}/${x}/${y}.png`;
+      })
+    	.setZoom(16)
+    	.setCenter([38.883266, -77.119310]);
     </script>
   </body>
 </html>
