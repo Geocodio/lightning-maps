@@ -19,4 +19,18 @@ export default class TileConversion {
 
     return 180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
   }
+
+  static tile2boundingBox(x, y, zoom) {
+    return {
+      ne: [
+        TileConversion.tile2lat(y, zoom),
+        TileConversion.tile2lon(x + 1, zoom)
+      ],
+
+      sw: [
+        TileConversion.tile2lat(y + 1, zoom),
+        TileConversion.tile2lon(x, zoom),
+      ]
+    };
+  }
 }

@@ -10,14 +10,14 @@
       You need to enable JavaScript to run this app.
     </noscript>
     <canvas id="map" width="1200" height="800"></canvas>
-    <script src="../lib/lightning-maps.js"></script>
+    <script src="../lib/lightningmaps.js"></script>
     <script>
-    new Lightning(document.getElementById('map'))
+    new lightningmaps.Lightning(document.getElementById('map'))
       .setSource(function (x, y, z) {
         return `https://maps.geocod.io/tiles/base/${z}/${x}/${y}.png`;
       })
-    	.setZoom(16)
-    	.setCenter([38.883266, -77.119310]);
+    	.setZoom(18)
+    	.setCenter([40.721266, -73.803598]);
     </script>
   </body>
 </html>

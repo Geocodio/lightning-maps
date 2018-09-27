@@ -15,9 +15,11 @@ export default class Lightning {
     this.context = this.canvas.getContext('2d');
     this.canvasDimensions = [canvas.width, canvas.height];
     this.tiles = {};
-    this.tileDimensions = [256, 256];
+    this.tileSize = 256;
+    this.deltaPosition = [0, 0];
 
-    this.debug = false;
+    this.debug = true;
+    this.dragStartPosition = null;
 
     this.attachEvents();
 
@@ -25,7 +27,7 @@ export default class Lightning {
   }
 
   setZoom(zoom) {
-    if (zoom >= 1 && zoom <= 18) {
+    if (zoom >= 0 && zoom <= 18) {
       this.zoom = zoom;
     }
 
@@ -66,10 +68,28 @@ export default class Lightning {
 
       return false;
     });
+
+    this.canvas.addEventListener('mousedown', event => {
+      this.dragStartPosition = [event.clientX, event.clientY];
+    });
+    this.canvas.addEventListener('mouseup', event => {
+      this.dragStartPosition = null;
+    });
+
+    this.canvas.addEventListener('mousemove', event => {
+      if (this.dragStartPosition && this.isReadyForEvent()) {
+        this.deltaPosition = [
+          this.deltaPosition[0] + this.dragStartPosition[0] - event.clientX,
+          this.deltaPosition[1] + this.dragStartPosition[1] - event.clientY
+        ];
+      }
+
+      return false;
+    });
   }
 
   getHorizontalTiles() {
-    let horizontalTiles = Math.ceil(this.canvasDimensions[0] / this.tileDimensions[0]);
+    let horizontalTiles = Math.ceil(this.canvasDimensions[0] / this.tileSize);
 
     if (horizontalTiles % 2 === 0) {
       horizontalTiles++;
@@ -79,7 +99,7 @@ export default class Lightning {
   }
 
   getVerticalTiles() {
-    let verticalTiles = Math.ceil(this.canvasDimensions[1] / this.tileDimensions[1]);
+    let verticalTiles = Math.ceil(this.canvasDimensions[1] / this.tileSize);
 
     if (verticalTiles % 2 === 0) {
       verticalTiles++;
@@ -88,12 +108,53 @@ export default class Lightning {
     return verticalTiles;
   }
 
+  latLngToPixel(latLng, center, zoom) {
+    const tileCenterX = TileConversion.lon2tile(this.center[1], zoom);
+    const tileCenterY = TileConversion.lat2tile(this.center[0], zoom);
+
+    const tileX = TileConversion.lon2tile(latLng[1], zoom);
+    const tileY = TileConversion.lat2tile(latLng[0], zoom);
+
+    return [
+      (tileX - tileCenterX) * this.tileSize + this.canvasDimensions[0] / 2 + this.deltaPosition[0],
+      (tileY - tileCenterY) * this.tileSize + this.canvasDimensions[1] / 2 + this.deltaPosition[1]
+    ];
+  }
+
   calculateGrid() {
     const horizontalTiles = this.getHorizontalTiles();
     const verticalTiles = this.getVerticalTiles();
 
     const centerY = TileConversion.lat2tile(this.center[0], this.zoom);
     const centerX = TileConversion.lon2tile(this.center[1], this.zoom);
+
+    const centerBounds = TileConversion.tile2boundingBox(centerX, centerY, this.zoom);
+
+    const relativeTileOffset = [
+      (centerBounds.ne[0] - this.center[0]) / (centerBounds.ne[0] - centerBounds.sw[0]),
+      (centerBounds.sw[1] - this.center[1]) / (centerBounds.sw[1] - centerBounds.ne[1]),
+    ];
+
+    /*
+    const relativeTileOffset = [
+      (this.center[0] - centerBounds.sw[0]) / (centerBounds.ne[0] - centerBounds.sw[0]),
+      (this.center[1] - centerBounds.sw[1]) / (centerBounds.ne[1] - centerBounds.sw[1])
+    ];
+    */
+
+    console.log(relativeTileOffset);
+
+    this.deltaPosition = [
+      this.tileSize / 2 - (relativeTileOffset[0] * this.tileSize),
+      this.tileSize / 2 - (relativeTileOffset[1] * this.tileSize),
+    ];
+
+    //console.log(this.deltaPosition);
+
+    //const verticalDiff = centerBounds.north - centerBounds.south;
+    //const horizontalDiff = centerBounds.east - centerBounds.west;
+
+    //console.log(centerBounds.east - this.center[0], centerBounds.north - this.center[1]);
 
     const startX = centerX - Math.floor(horizontalTiles / 2);
     const startY = centerY - Math.floor(verticalTiles / 2);
@@ -120,11 +181,14 @@ export default class Lightning {
     this.context.clearRect(0, 0, this.canvasDimensions[0], this.canvasDimensions[1]);
     this.context.strokeStyle = 'green';
 
+    this.context.fillStyle = 'rgb(200, 0, 0)';
+    this.context.fillRect(this.canvasDimensions[0] / 2 - 10 / 2, this.canvasDimensions[1] / 2 - 10 / 2, 10, 10);
+
     const horizontalTiles = this.getHorizontalTiles();
     const verticalTiles = this.getVerticalTiles();
 
-    const horizontalOverflow = (horizontalTiles * this.tileDimensions[0]) - this.canvasDimensions[0];
-    const verticalOverflow = (verticalTiles * this.tileDimensions[1]) - this.canvasDimensions[1];
+    const horizontalOverflow = (horizontalTiles * this.tileSize) - this.canvasDimensions[0];
+    const verticalOverflow = (verticalTiles * this.tileSize) - this.canvasDimensions[1];
 
     for (let y = 0; y < verticalTiles; y++) {
       for (let x = 0; x < horizontalTiles; x++) {
@@ -137,52 +201,22 @@ export default class Lightning {
 
         this.context.drawImage(
           this.tiles[tile.id],
-          x * this.tileDimensions[0] - horizontalOverflow / 2,
-          y * this.tileDimensions[1] - verticalOverflow / 2,
-          this.tileDimensions[0],
-          this.tileDimensions[1]
+          this.deltaPosition[0] + (x * this.tileSize - horizontalOverflow / 2),
+          this.deltaPosition[1] + (y * this.tileSize - verticalOverflow / 2),
+          this.tileSize,
+          this.tileSize
         );
 
         if (this.debug) {
           this.context.strokeRect(
-            x * this.tileDimensions[0] - horizontalOverflow / 2,
-            y * this.tileDimensions[1] - verticalOverflow / 2,
-            this.tileDimensions[0],
-            this.tileDimensions[1]
+            this.deltaPosition[0] + (x * this.tileSize - horizontalOverflow / 2),
+            this.deltaPosition[1] + (y * this.tileSize - verticalOverflow / 2),
+            this.tileSize,
+            this.tileSize
           );
         }
       }
     }
-
-    /*
-    this.context.fillStyle = 'rgba(0, 0, 0, 0.4)';
-    this.context.strokeStyle = 'rgba(0, 153, 255, 0.4)';
-    this.context.save();
-    this.context.translate(150, 150);
-
-    // Earth
-    const time = new Date();
-
-    this.context.rotate(((2 * Math.PI) / 60) * time.getSeconds() + ((2 * Math.PI) / 60000) * time.getMilliseconds());
-    this.context.translate(105, 0);
-    this.context.fillRect(0, -12, 50, 24); // Shadow
-    this.context.drawImage(this.earth, -12, -12);
-
-    // Moon
-    this.context.save();
-    this.context.rotate(((2 * Math.PI) / 6) * time.getSeconds() + ((2 * Math.PI) / 6000) * time.getMilliseconds());
-    this.context.translate(0, 28.5);
-    this.context.drawImage(this.moon, -3.5, -3.5);
-    this.context.restore();
-
-    this.context.restore();
-
-    this.context.beginPath();
-    this.context.arc(150, 150, 105, 0, Math.PI * 2, false); // Earth orbit
-    this.context.stroke();
-
-    this.context.drawImage(this.sun, 0, 0, 300, 300);
-    */
 
     window.requestAnimationFrame(this.draw);
   }
