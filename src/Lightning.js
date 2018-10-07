@@ -125,39 +125,24 @@ export default class Lightning {
     const horizontalTiles = this.getHorizontalTiles();
     const verticalTiles = this.getVerticalTiles();
 
-    const centerY = TileConversion.lat2tile(this.center[0], this.zoom);
-    const centerX = TileConversion.lon2tile(this.center[1], this.zoom);
+    const centerY = TileConversion.lat2tile(this.center[0], this.zoom, false);
+    const centerX = TileConversion.lon2tile(this.center[1], this.zoom, false);
 
-    const centerBounds = TileConversion.tile2boundingBox(centerX, centerY, this.zoom);
+    const centerYRounded = Math.floor(centerY);
+    const centerXRounded = Math.floor(centerX);
 
     const relativeTileOffset = [
-      (centerBounds.ne[0] - this.center[0]) / (centerBounds.ne[0] - centerBounds.sw[0]),
-      (centerBounds.sw[1] - this.center[1]) / (centerBounds.sw[1] - centerBounds.ne[1]),
+      Math.abs(centerX - centerXRounded),
+      Math.abs(centerY - centerYRounded)
     ];
-
-    /*
-    const relativeTileOffset = [
-      (this.center[0] - centerBounds.sw[0]) / (centerBounds.ne[0] - centerBounds.sw[0]),
-      (this.center[1] - centerBounds.sw[1]) / (centerBounds.ne[1] - centerBounds.sw[1])
-    ];
-    */
-
-    console.log(relativeTileOffset);
 
     this.deltaPosition = [
       this.tileSize / 2 - (relativeTileOffset[0] * this.tileSize),
-      this.tileSize / 2 - (relativeTileOffset[1] * this.tileSize),
+      this.tileSize / 2 - (relativeTileOffset[1] * this.tileSize)
     ];
 
-    //console.log(this.deltaPosition);
-
-    //const verticalDiff = centerBounds.north - centerBounds.south;
-    //const horizontalDiff = centerBounds.east - centerBounds.west;
-
-    //console.log(centerBounds.east - this.center[0], centerBounds.north - this.center[1]);
-
-    const startX = centerX - Math.floor(horizontalTiles / 2);
-    const startY = centerY - Math.floor(verticalTiles / 2);
+    const startX = centerXRounded - Math.floor(horizontalTiles / 2);
+    const startY = centerYRounded - Math.floor(verticalTiles / 2);
 
     let grid = [];
 
@@ -196,7 +181,7 @@ export default class Lightning {
 
         if (!(tile.id in this.tiles)) {
           this.tiles[tile.id] = new Image();
-          this.tiles[tile.id].src = this.source(tile.x, tile.y, tile.zoom);
+          this.tiles[tile.id].src = this.source(Math.floor(tile.x), Math.floor(tile.y), tile.zoom);
         }
 
         this.context.drawImage(
