@@ -9,8 +9,8 @@ export default class TileConversion {
   }
 
   static lat2tile(lat, zoom, rounded = true) {
-    const tile = (1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) /
-        Math.PI) / 2 * Math.pow(2, zoom);
+    const tile = (1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180))
+      / Math.PI) / 2 * Math.pow(2, zoom);
 
     return rounded
       ? Math.floor(tile)
@@ -39,5 +39,20 @@ export default class TileConversion {
         TileConversion.tile2lon(x, zoom)
       ]
     };
+  }
+
+  static pixelToLatLon(pixel, center, zoom, mapDimensions, tileSize) {
+    const pointDiff = [
+      pixel[0] / tileSize,
+      pixel[1] / tileSize
+    ];
+
+    const tileX = TileConversion.lon2tile(center[1], zoom, false) - pointDiff[0];
+    const tileY = TileConversion.lat2tile(center[0], zoom, false) - pointDiff[1];
+
+    return [
+      TileConversion.tile2lat(tileY, zoom),
+      TileConversion.tile2lon(tileX, zoom)
+    ];
   }
 }

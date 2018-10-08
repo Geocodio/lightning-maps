@@ -1,7 +1,7 @@
 import TileConversion from './TileConversion';
 import Tile from './Tile';
 
-const DEBOUNCE_INTERVAL_MS = 500;
+const DEBOUNCE_INTERVAL_MS = 50;
 
 export default class Lightning {
   constructor(canvas) {
@@ -17,17 +17,19 @@ export default class Lightning {
     this.tiles = {};
     this.tileSize = 256;
     this.deltaPosition = [0, 0];
+    this.tempDeltaPosition = [0, 0];
 
-    this.debug = true;
+    this.debug = false;
     this.dragStartPosition = null;
 
     this.attachEvents();
+    this.applyStyles();
 
     window.requestAnimationFrame(this.draw);
   }
 
   setZoom(zoom) {
-    if (zoom >= 0 && zoom <= 18) {
+    if (zoom >= 1 && zoom <= 18) {
       this.zoom = zoom;
     }
 
@@ -66,30 +68,47 @@ export default class Lightning {
         }
       }
 
-      return false;
+      event.preventDefault();
     });
 
     this.canvas.addEventListener('mousedown', event => {
       this.dragStartPosition = [event.clientX, event.clientY];
     });
+
     this.canvas.addEventListener('mouseup', event => {
+      const latLon = TileConversion.pixelToLatLon(
+        this.tempDeltaPosition,
+        this.center,
+        this.zoom,
+        this.canvasDimensions,
+        this.tileSize
+      );
+
+      this.tempDeltaPosition = [0, 0];
+      this.center = latLon;
+
       this.dragStartPosition = null;
     });
 
     this.canvas.addEventListener('mousemove', event => {
-      if (this.dragStartPosition && this.isReadyForEvent()) {
-        this.deltaPosition = [
-          this.deltaPosition[0] + this.dragStartPosition[0] - event.clientX,
-          this.deltaPosition[1] + this.dragStartPosition[1] - event.clientY
-        ];
+      if (this.dragStartPosition) {
+        this.lastEventActionTime = new Date().getTime();
+        const x = this.dragStartPosition[0] - event.clientX;
+        const y = this.dragStartPosition[1] - event.clientY;
+
+        this.tempDeltaPosition = [-x, -y];
       }
 
       return false;
     });
   }
 
+  applyStyles() {
+    this.canvas.style.cursor = 'grab';
+  }
+
   getHorizontalTiles() {
-    let horizontalTiles = Math.ceil(this.canvasDimensions[0] / this.tileSize);
+    let horizontalTiles = Math.ceil(this.canvasDimensions[0] / this.tileSize) * 2;
 
     if (horizontalTiles % 2 === 0) {
       horizontalTiles++;
@@ -99,26 +118,13 @@ export default class Lightning {
   }
 
   getVerticalTiles() {
-    let verticalTiles = Math.ceil(this.canvasDimensions[1] / this.tileSize);
+    let verticalTiles = Math.ceil(this.canvasDimensions[1] / this.tileSize) * 2;
 
     if (verticalTiles % 2 === 0) {
       verticalTiles++;
     }
 
     return verticalTiles;
-  }
-
-  latLngToPixel(latLng, center, zoom) {
-    const tileCenterX = TileConversion.lon2tile(this.center[1], zoom);
-    const tileCenterY = TileConversion.lat2tile(this.center[0], zoom);
-
-    const tileX = TileConversion.lon2tile(latLng[1], zoom);
-    const tileY = TileConversion.lat2tile(latLng[0], zoom);
-
-    return [
-      (tileX - tileCenterX) * this.tileSize + this.canvasDimensions[0] / 2 + this.deltaPosition[0],
-      (tileY - tileCenterY) * this.tileSize + this.canvasDimensions[1] / 2 + this.deltaPosition[1]
-    ];
   }
 
   calculateGrid() {
@@ -152,7 +158,12 @@ export default class Lightning {
           grid[x] = [];
         }
 
-        grid[x][y] = new Tile(startX + x, startY + y, this.zoom);
+        const tileX = startX + x;
+        const tileY = startY + y;
+
+        if (tileX >= 0 && tileY >= 0) {
+          grid[x][y] = new Tile(tileX, tileY, this.zoom);
+        }
       }
     }
 
@@ -162,12 +173,10 @@ export default class Lightning {
   draw() {
     this.calculateGrid();
 
-    this.context.globalCompositeOperation = 'destination-over';
-    this.context.clearRect(0, 0, this.canvasDimensions[0], this.canvasDimensions[1]);
+    this.context.fillStyle = '#C5DFF6';
+    this.context.fillRect(0, 0, this.canvasDimensions[0], this.canvasDimensions[1]);
     this.context.strokeStyle = 'green';
 
-    this.context.fillStyle = 'rgb(200, 0, 0)';
-    this.context.fillRect(this.canvasDimensions[0] / 2 - 10 / 2, this.canvasDimensions[1] / 2 - 10 / 2, 10, 10);
 
     const horizontalTiles = this.getHorizontalTiles();
     const verticalTiles = this.getVerticalTiles();
@@ -179,29 +188,34 @@ export default class Lightning {
       for (let x = 0; x < horizontalTiles; x++) {
         const tile = this.grid[x][y];
 
-        if (!(tile.id in this.tiles)) {
-          this.tiles[tile.id] = new Image();
-          this.tiles[tile.id].src = this.source(Math.floor(tile.x), Math.floor(tile.y), tile.zoom);
-        }
+        if (tile) {
+          if (!(tile.id in this.tiles)) {
+            this.tiles[tile.id] = new Image();
+            this.tiles[tile.id].src = this.source(Math.floor(tile.x), Math.floor(tile.y), tile.zoom);
+          }
 
-        this.context.drawImage(
-          this.tiles[tile.id],
-          this.deltaPosition[0] + (x * this.tileSize - horizontalOverflow / 2),
-          this.deltaPosition[1] + (y * this.tileSize - verticalOverflow / 2),
-          this.tileSize,
-          this.tileSize
-        );
+          const tileX = this.tempDeltaPosition[0] + this.deltaPosition[0] + (x * this.tileSize - horizontalOverflow / 2);
+          const tileY = this.tempDeltaPosition[1] + this.deltaPosition[1] + (y * this.tileSize - verticalOverflow / 2)
 
-        if (this.debug) {
-          this.context.strokeRect(
-            this.deltaPosition[0] + (x * this.tileSize - horizontalOverflow / 2),
-            this.deltaPosition[1] + (y * this.tileSize - verticalOverflow / 2),
-            this.tileSize,
-            this.tileSize
-          );
+          try {
+            this.context.drawImage(this.tiles[tile.id], tileX, tileY, this.tileSize, this.tileSize);
+          } catch (err) {
+            // Do nothing for now
+          }
+
+          if (this.debug) {
+            this.context.strokeRect(tileX, tileY, this.tileSize, this.tileSize);
+          }
         }
       }
     }
+
+    /*
+    this.context.fillStyle = 'rgba(200, 0, 0, 0.7)';
+    this.context.beginPath();
+    this.context.arc(this.canvasDimensions[0] / 2, this.canvasDimensions[1] / 2, 10, 0, 2 * Math.PI);
+    this.context.fill();
+    */
 
     window.requestAnimationFrame(this.draw);
   }
