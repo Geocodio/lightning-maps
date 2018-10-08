@@ -1,7 +1,7 @@
 import TileConversion from './TileConversion';
 import Tile from './Tile';
 
-const DEBOUNCE_INTERVAL_MS = 50;
+const DEBOUNCE_INTERVAL_MS = 200;
 
 export default class Lightning {
   constructor(canvas) {
@@ -173,16 +173,17 @@ export default class Lightning {
   draw() {
     this.calculateGrid();
 
-    this.context.fillStyle = '#C5DFF6';
+    this.context.fillStyle = '#eee';
     this.context.fillRect(0, 0, this.canvasDimensions[0], this.canvasDimensions[1]);
-    this.context.strokeStyle = 'green';
-
 
     const horizontalTiles = this.getHorizontalTiles();
     const verticalTiles = this.getVerticalTiles();
 
     const horizontalOverflow = (horizontalTiles * this.tileSize) - this.canvasDimensions[0];
     const verticalOverflow = (verticalTiles * this.tileSize) - this.canvasDimensions[1];
+
+    this.context.fillStyle = '#C5DFF6';
+    this.context.strokeStyle = 'green';
 
     for (let y = 0; y < verticalTiles; y++) {
       for (let x = 0; x < horizontalTiles; x++) {
@@ -200,7 +201,7 @@ export default class Lightning {
           try {
             this.context.drawImage(this.tiles[tile.id], tileX, tileY, this.tileSize, this.tileSize);
           } catch (err) {
-            // Do nothing for now
+            this.context.fillRect(this.tiles[tile.id], tileX, tileY, this.tileSize, this.tileSize);
           }
 
           if (this.debug) {
