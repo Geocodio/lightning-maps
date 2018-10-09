@@ -196,7 +196,7 @@ export default class Lightning {
           }
 
           const tileX = this.tempDeltaPosition[0] + this.deltaPosition[0] + (x * this.tileSize - horizontalOverflow / 2);
-          const tileY = this.tempDeltaPosition[1] + this.deltaPosition[1] + (y * this.tileSize - verticalOverflow / 2)
+          const tileY = this.tempDeltaPosition[1] + this.deltaPosition[1] + (y * this.tileSize - verticalOverflow / 2);
 
           try {
             this.context.drawImage(this.tiles[tile.id], tileX, tileY, this.tileSize, this.tileSize);
