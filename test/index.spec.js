@@ -1,7 +1,7 @@
 /* global describe, it, before */
 
 import chai from 'chai';
-import {Cat, Dog} from '../lib/lightning-maps.js';
+import {Cat, Dog} from '../lib/lightning-map.js';
 
 chai.expect();
 

@@ -1,2 +1,7 @@
 import Lightning from './Lightning';
-export { Lightning };
+
+function init(canvas, options = {}) {
+  return new Lightning(canvas, options);
+}
+
+export default init;

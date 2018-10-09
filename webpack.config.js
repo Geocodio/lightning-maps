@@ -5,7 +5,7 @@ const path = require('path');
 const env = require('yargs').argv.env; // use --env with webpack 2
 const pkg = require('./package.json');
 
-const outputName = 'lightningmaps';
+const outputName = 'LightningMap';
 
 let outputFile, mode;
 

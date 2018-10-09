@@ -3,21 +3,22 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Lightning maps</title>
+    <title>Lightning Map</title>
   </head>
   <body>
     <noscript>
       You need to enable JavaScript to run this app.
     </noscript>
     <canvas id="map" width="1200" height="800"></canvas>
-    <script src="../lib/lightningmaps.js"></script>
+    <script src="../lib/LightningMap.js"></script>
     <script>
-    new lightningmaps.Lightning(document.getElementById('map'))
-      .setSource(function (x, y, z) {
+    LightningMap(document.getElementById('map'), {
+      source: function (x, y, z) {
         return `https://maps.geocod.io/tiles/base/${z}/${x}/${y}.png`;
-      })
-    	.setZoom(12)
-    	.setCenter([38.841779, -77.088312]);
+      },
+      zoom: 12,
+      center: [38.841779, -77.088312]
+    });
     </script>
   </body>
 </html>

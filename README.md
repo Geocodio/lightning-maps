@@ -1,4 +1,4 @@
-# Lightning Maps
+# Lightning Map
 
 ## Scripts
 

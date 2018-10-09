@@ -1,102 +1,103 @@
 import TileConversion from './TileConversion';
 import Tile from './Tile';
+import defaultOptions from './defaultOptions';
 
 const DEBOUNCE_INTERVAL_MS = 200;
 
 export default class Lightning {
-  constructor(canvas) {
+
+  constructor(canvas, options) {
     if (!canvas || !canvas.getContext) {
       throw new Error('Could not get canvas context');
     }
 
-    this.draw = this.draw.bind(this);
-
     this.canvas = canvas;
     this.context = this.canvas.getContext('2d');
-    this.canvasDimensions = [canvas.width, canvas.height];
-    this.tiles = {};
-    this.tileSize = 256;
-    this.deltaPosition = [0, 0];
-    this.tempDeltaPosition = [0, 0];
 
-    this.debug = false;
-    this.dragStartPosition = null;
+    this.options = Object.assign({}, defaultOptions, options);
 
+    this.initializeState();
     this.attachEvents();
     this.applyStyles();
 
+    this.draw = this.draw.bind(this);
     window.requestAnimationFrame(this.draw);
+  }
+
+  initializeState() {
+    this.state = {
+      canvasDimensions: [this.canvas.width, this.canvas.height],
+      tiles: {},
+      centerOffset: [0, 0],
+      moveOffset: [0, 0],
+      dragStartPosition: null,
+      lastEventActionTime: null
+    };
   }
 
   setZoom(zoom) {
     if (zoom >= 1 && zoom <= 18) {
-      this.zoom = zoom;
+      this.options.zoom = zoom;
     }
-
-    return this;
-  }
-
-  setCenter(coord) {
-    this.center = coord;
-    return this;
-  }
-
-  setSource(source) {
-    this.source = source;
-    return this;
   }
 
   isReadyForEvent() {
-    if (!this.lastEventActionTime) {
+    if (!this.state.lastEventActionTime) {
       return true;
     }
 
     const now = new Date().getTime();
+    const milliSecondsSinceLastEvent = now - this.state.lastEventActionTime;
 
-    return now - this.lastEventActionTime > DEBOUNCE_INTERVAL_MS;
+    return milliSecondsSinceLastEvent > DEBOUNCE_INTERVAL_MS;
   }
 
   attachEvents() {
     this.canvas.addEventListener('wheel', event => {
+      event.preventDefault();
+
       if (this.isReadyForEvent()) {
         if (event.deltaY > 5) {
-          this.lastEventActionTime = new Date().getTime();
-          this.setZoom(this.zoom - 2);
+          this.state.lastEventActionTime = new Date().getTime();
+          this.setZoom(this.options.zoom - 2);
         } else if (event.deltaY < -5) {
-          this.lastEventActionTime = new Date().getTime();
-          this.setZoom(this.zoom + 2);
+          this.state.lastEventActionTime = new Date().getTime();
+          this.setZoom(this.options.zoom + 2);
         }
       }
-
-      event.preventDefault();
     });
 
     this.canvas.addEventListener('mousedown', event => {
-      this.dragStartPosition = [event.clientX, event.clientY];
+      event.preventDefault();
+      this.state.dragStartPosition = [event.clientX, event.clientY];
     });
 
     this.canvas.addEventListener('mouseup', event => {
+      event.preventDefault();
+
       const latLon = TileConversion.pixelToLatLon(
-        this.tempDeltaPosition,
-        this.center,
-        this.zoom,
-        this.canvasDimensions,
-        this.tileSize
+        this.state.moveOffset,
+        this.options.center,
+        this.options.zoom,
+        this.options.canvasDimensions,
+        this.options.tileSize
       );
 
-      this.tempDeltaPosition = [0, 0];
-      this.center = latLon;
+      this.state.moveOffset = [0, 0];
+      this.options.center = latLon;
 
-      this.dragStartPosition = null;
+      this.state.dragStartPosition = null;
     });
 
     this.canvas.addEventListener('mousemove', event => {
-      if (this.dragStartPosition) {
-        this.lastEventActionTime = new Date().getTime();
-        const x = this.dragStartPosition[0] - event.clientX;
-        const y = this.dragStartPosition[1] - event.clientY;
+      event.preventDefault();
 
-        this.tempDeltaPosition = [-x, -y];
+      if (this.state.dragStartPosition) {
+        this.state.lastEventActionTime = new Date().getTime();
+        const x = this.state.dragStartPosition[0] - event.clientX;
+        const y = this.state.dragStartPosition[1] - event.clientY;
+
+        this.state.moveOffset = [-x, -y];
       }
 
       return false;
@@ -107,33 +108,24 @@ export default class Lightning {
     this.canvas.style.cursor = 'grab';
   }
 
-  getHorizontalTiles() {
-    let horizontalTiles = Math.ceil(this.canvasDimensions[0] / this.tileSize) * 2;
+  getTilesCount(canvasSize) {
+    let tilesCount = Math.ceil(canvasSize / this.options.tileSize) * 2;
 
-    if (horizontalTiles % 2 === 0) {
-      horizontalTiles++;
+    if (tilesCount % 2 === 0) {
+      tilesCount++;
     }
 
-    return horizontalTiles;
-  }
-
-  getVerticalTiles() {
-    let verticalTiles = Math.ceil(this.canvasDimensions[1] / this.tileSize) * 2;
-
-    if (verticalTiles % 2 === 0) {
-      verticalTiles++;
-    }
-
-    return verticalTiles;
+    return tilesCount;
   }
 
   calculateGrid() {
-    const horizontalTiles = this.getHorizontalTiles();
-    const verticalTiles = this.getVerticalTiles();
+    const horizontalTiles = this.getTilesCount(this.state.canvasDimensions[0]);
+    const verticalTiles = this.getTilesCount(this.state.canvasDimensions[1]);
 
-    const centerY = TileConversion.lat2tile(this.center[0], this.zoom, false);
-    const centerX = TileConversion.lon2tile(this.center[1], this.zoom, false);
+    const centerY = TileConversion.lat2tile(this.options.center[0], this.options.zoom, false);
+    const centerX = TileConversion.lon2tile(this.options.center[1], this.options.zoom, false);
 
+    // noinspection JSSuspiciousNameCombination
     const centerYRounded = Math.floor(centerY);
     const centerXRounded = Math.floor(centerX);
 
@@ -142,9 +134,9 @@ export default class Lightning {
       Math.abs(centerY - centerYRounded)
     ];
 
-    this.deltaPosition = [
-      this.tileSize / 2 - (relativeTileOffset[0] * this.tileSize),
-      this.tileSize / 2 - (relativeTileOffset[1] * this.tileSize)
+    this.state.centerOffset = [
+      this.options.tileSize / 2 - (relativeTileOffset[0] * this.options.tileSize),
+      this.options.tileSize / 2 - (relativeTileOffset[1] * this.options.tileSize)
     ];
 
     const startX = centerXRounded - Math.floor(horizontalTiles / 2);
@@ -162,7 +154,7 @@ export default class Lightning {
         const tileY = startY + y;
 
         if (tileX >= 0 && tileY >= 0) {
-          grid[x][y] = new Tile(tileX, tileY, this.zoom);
+          grid[x][y] = new Tile(tileX, tileY, this.options.zoom);
         }
       }
     }
@@ -174,13 +166,13 @@ export default class Lightning {
     this.calculateGrid();
 
     this.context.fillStyle = '#eee';
-    this.context.fillRect(0, 0, this.canvasDimensions[0], this.canvasDimensions[1]);
+    this.context.fillRect(0, 0, this.state.canvasDimensions[0], this.state.canvasDimensions[1]);
 
-    const horizontalTiles = this.getHorizontalTiles();
-    const verticalTiles = this.getVerticalTiles();
+    const horizontalTiles = this.getTilesCount(this.state.canvasDimensions[0]);
+    const verticalTiles = this.getTilesCount(this.state.canvasDimensions[1]);
 
-    const horizontalOverflow = (horizontalTiles * this.tileSize) - this.canvasDimensions[0];
-    const verticalOverflow = (verticalTiles * this.tileSize) - this.canvasDimensions[1];
+    const horizontalOverflow = (horizontalTiles * this.options.tileSize) - this.state.canvasDimensions[0];
+    const verticalOverflow = (verticalTiles * this.options.tileSize) - this.state.canvasDimensions[1];
 
     this.context.fillStyle = '#C5DFF6';
     this.context.strokeStyle = 'green';
@@ -190,22 +182,29 @@ export default class Lightning {
         const tile = this.grid[x][y];
 
         if (tile) {
-          if (!(tile.id in this.tiles)) {
-            this.tiles[tile.id] = new Image();
-            this.tiles[tile.id].src = this.source(Math.floor(tile.x), Math.floor(tile.y), tile.zoom);
+          if (!(tile.id in this.state.tiles)) {
+            this.state.tiles[tile.id] = new Image();
+            this.state.tiles[tile.id].src = this.options.source(Math.floor(tile.x), Math.floor(tile.y), tile.zoom);
           }
 
-          const tileX = this.tempDeltaPosition[0] + this.deltaPosition[0] + (x * this.tileSize - horizontalOverflow / 2);
-          const tileY = this.tempDeltaPosition[1] + this.deltaPosition[1] + (y * this.tileSize - verticalOverflow / 2);
+          const tileX = this.state.moveOffset[0] + this.state.centerOffset[0]
+            + (x * this.options.tileSize - horizontalOverflow / 2);
+
+          const tileY = this.state.moveOffset[1] + this.state.centerOffset[1]
+            + (y * this.options.tileSize - verticalOverflow / 2);
 
           try {
-            this.context.drawImage(this.tiles[tile.id], tileX, tileY, this.tileSize, this.tileSize);
+            this.context.drawImage(
+              this.state.tiles[tile.id],
+              tileX, tileY,
+              this.options.tileSize, this.options.tileSize
+            );
           } catch (err) {
-            this.context.fillRect(this.tiles[tile.id], tileX, tileY, this.tileSize, this.tileSize);
+            this.context.fillRect(tileX, tileY, this.options.tileSize, this.options.tileSize);
           }
 
-          if (this.debug) {
-            this.context.strokeRect(tileX, tileY, this.tileSize, this.tileSize);
+          if (this.options.debug) {
+            this.context.strokeRect(tileX, tileY, this.options.tileSize, this.options.tileSize);
           }
         }
       }
@@ -214,7 +213,7 @@ export default class Lightning {
     /*
     this.context.fillStyle = 'rgba(200, 0, 0, 0.7)';
     this.context.beginPath();
-    this.context.arc(this.canvasDimensions[0] / 2, this.canvasDimensions[1] / 2, 10, 0, 2 * Math.PI);
+    this.context.arc(this.state.canvasDimensions[0] / 2, this.state.canvasDimensions[1] / 2, 10, 0, 2 * Math.PI);
     this.context.fill();
     */
 
