@@ -30,6 +30,8 @@ export default class Lightning {
       tiles: {},
       centerOffset: [0, 0],
       moveOffset: [0, 0],
+      targetMoveOffset: [0, 0],
+      moveAnimationStart: null,
       dragStartPosition: null,
       lastEventActionTime: null
     };
@@ -74,18 +76,6 @@ export default class Lightning {
 
     this.canvas.addEventListener('mouseup', event => {
       event.preventDefault();
-
-      const latLon = TileConversion.pixelToLatLon(
-        this.state.moveOffset,
-        this.options.center,
-        this.options.zoom,
-        this.options.canvasDimensions,
-        this.options.tileSize
-      );
-
-      this.state.moveOffset = [0, 0];
-      this.options.center = latLon;
-
       this.state.dragStartPosition = null;
     });
 
@@ -97,7 +87,12 @@ export default class Lightning {
         const x = this.state.dragStartPosition[0] - event.clientX;
         const y = this.state.dragStartPosition[1] - event.clientY;
 
-        this.state.moveOffset = [-x, -y];
+        this.state.targetMoveOffset = [
+          -x * this.options.panAccelerationMultiplier,
+          -y * this.options.panAccelerationMultiplier
+        ];
+
+        this.state.moveAnimationStart = window.performance.now();
       }
 
       return false;
@@ -162,7 +157,49 @@ export default class Lightning {
     this.grid = grid;
   }
 
+  easeOutQuad(time) {
+    return time * (2 - time);
+  }
+
+  updateMoveOffset() {
+    const targetMoveOffsetChanged = Object.values(this.state.moveOffset).join(',')
+      !== Object.values(this.state.targetMoveOffset).join(',');
+
+    if (targetMoveOffsetChanged) {
+      const timestamp = performance.now();
+
+      const length = 1500;
+      const progress = Math.max(timestamp - this.state.moveAnimationStart, 0);
+      const percentage = this.easeOutQuad(progress / length);
+
+      this.state.moveOffset = [
+        this.state.moveOffset[0] + (this.state.targetMoveOffset[0] - this.state.moveOffset[0]) * percentage,
+        this.state.moveOffset[1] + (this.state.targetMoveOffset[1] - this.state.moveOffset[1]) * percentage
+      ];
+
+      const targetHasBeenReached = Object.values(this.state.moveOffset).join(',')
+        === Object.values(this.state.targetMoveOffset).join(',');
+
+      if (targetHasBeenReached) {
+        console.log('Done!');
+
+        const latLon = TileConversion.pixelToLatLon(
+          this.state.moveOffset,
+          this.options.center,
+          this.options.zoom,
+          this.options.canvasDimensions,
+          this.options.tileSize
+        );
+
+        this.state.moveOffset = [0, 0];
+        this.state.targetMoveOffset = [0, 0];
+        this.options.center = latLon;
+      }
+    }
+  }
+
   draw() {
+    this.updateMoveOffset();
     this.calculateGrid();
 
     this.context.fillStyle = '#eee';
