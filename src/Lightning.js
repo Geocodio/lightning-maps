@@ -33,13 +33,17 @@ export default class Lightning {
       targetMoveOffset: [0, 0],
       moveAnimationStart: null,
       dragStartPosition: null,
-      lastEventActionTime: null
+      lastEventActionTime: null,
+      targetZoom: this.options.zoom,
+      zoomAnimationStart: null
     };
   }
 
   setZoom(zoom) {
     if (zoom >= 1 && zoom <= 18) {
-      this.options.zoom = zoom;
+      this.state.lastEventActionTime = new Date().getTime();
+      this.state.zoomAnimationStart = window.performance.now();
+      this.state.targetZoom = zoom;
     }
   }
 
@@ -60,10 +64,8 @@ export default class Lightning {
 
       if (this.isReadyForEvent()) {
         if (event.deltaY > 5) {
-          this.state.lastEventActionTime = new Date().getTime();
           this.setZoom(this.options.zoom - 2);
         } else if (event.deltaY < -5) {
-          this.state.lastEventActionTime = new Date().getTime();
           this.setZoom(this.options.zoom + 2);
         }
       }
@@ -113,6 +115,69 @@ export default class Lightning {
     return tilesCount;
   }
 
+  easeOutQuad(time) {
+    return time * (2 - time);
+  }
+
+  updateMoveOffset() {
+    const targetMoveOffsetChanged = Object.values(this.state.moveOffset).join(',')
+      !== Object.values(this.state.targetMoveOffset).join(',');
+
+    if (targetMoveOffsetChanged) {
+      const timestamp = performance.now();
+
+      const length = 1500;
+      const progress = Math.max(timestamp - this.state.moveAnimationStart, 0);
+      const percentage = this.easeOutQuad(progress / length);
+
+      this.state.moveOffset = [
+        this.state.moveOffset[0] + (this.state.targetMoveOffset[0] - this.state.moveOffset[0]) * percentage,
+        this.state.moveOffset[1] + (this.state.targetMoveOffset[1] - this.state.moveOffset[1]) * percentage
+      ];
+
+      const targetHasBeenReached = Object.values(this.state.moveOffset).join(',')
+        === Object.values(this.state.targetMoveOffset).join(',');
+
+      if (targetHasBeenReached) {
+        const latLon = TileConversion.pixelToLatLon(
+          this.state.moveOffset,
+          this.options.center,
+          this.options.zoom,
+          this.options.canvasDimensions,
+          this.options.tileSize
+        );
+
+        this.state.moveOffset = [0, 0];
+        this.state.targetMoveOffset = [0, 0];
+        this.options.center = latLon;
+      }
+    }
+  }
+
+  updateZoom() {
+    if (this.options.zoom !== this.state.targetZoom) {
+      const timestamp = performance.now();
+
+      const length = 10000;
+      const progress = Math.max(timestamp - this.state.zoomAnimationStart, 0);
+      const percentage = this.easeOutQuad(progress / length);
+
+      const newZoom = this.options.zoom + (this.state.targetZoom - this.options.zoom) * percentage;
+
+      this.options.zoom = this.state.targetZoom > this.options.zoom ? Math.ceil(newZoom) : Math.floor(newZoom);
+
+      let scale = this.options.zoom - newZoom;
+
+      if (this.state.targetZoom > this.options.zoom) {
+        scale += 1;
+      }
+
+      return scale;
+    }
+
+    return 1;
+  }
+
   calculateGrid() {
     const horizontalTiles = this.getTilesCount(this.state.canvasDimensions[0]);
     const verticalTiles = this.getTilesCount(this.state.canvasDimensions[1]);
@@ -157,49 +222,16 @@ export default class Lightning {
     this.grid = grid;
   }
 
-  easeOutQuad(time) {
-    return time * (2 - time);
-  }
-
-  updateMoveOffset() {
-    const targetMoveOffsetChanged = Object.values(this.state.moveOffset).join(',')
-      !== Object.values(this.state.targetMoveOffset).join(',');
-
-    if (targetMoveOffsetChanged) {
-      const timestamp = performance.now();
-
-      const length = 1500;
-      const progress = Math.max(timestamp - this.state.moveAnimationStart, 0);
-      const percentage = this.easeOutQuad(progress / length);
-
-      this.state.moveOffset = [
-        this.state.moveOffset[0] + (this.state.targetMoveOffset[0] - this.state.moveOffset[0]) * percentage,
-        this.state.moveOffset[1] + (this.state.targetMoveOffset[1] - this.state.moveOffset[1]) * percentage
-      ];
-
-      const targetHasBeenReached = Object.values(this.state.moveOffset).join(',')
-        === Object.values(this.state.targetMoveOffset).join(',');
-
-      if (targetHasBeenReached) {
-        console.log('Done!');
-
-        const latLon = TileConversion.pixelToLatLon(
-          this.state.moveOffset,
-          this.options.center,
-          this.options.zoom,
-          this.options.canvasDimensions,
-          this.options.tileSize
-        );
-
-        this.state.moveOffset = [0, 0];
-        this.state.targetMoveOffset = [0, 0];
-        this.options.center = latLon;
-      }
-    }
-  }
-
   draw() {
+    this.context.setTransform(1, 0, 0, 1, 0, 0);
+
     this.updateMoveOffset();
+    const scale = this.updateZoom();
+
+    if (scale !== 1) {
+      this.context.scale(scale, scale);
+    }
+
     this.calculateGrid();
 
     this.context.fillStyle = '#eee';
