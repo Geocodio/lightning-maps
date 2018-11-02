@@ -28,6 +28,8 @@ export default class Lightning {
     this.state = {
       canvasDimensions: [this.canvas.width, this.canvas.height],
       tiles: {},
+      grid: [],
+      gridHash: null,
       centerOffset: [0, 0],
       moveOffset: [0, 0],
       targetMoveOffset: [0, 0],
@@ -40,11 +42,15 @@ export default class Lightning {
   }
 
   setZoom(zoom) {
-    if (zoom >= 1 && zoom <= 18) {
+    if (this.zoomValueIsValid(zoom)) {
       this.state.lastEventActionTime = new Date().getTime();
       this.state.zoomAnimationStart = window.performance.now();
       this.state.targetZoom = zoom;
     }
+  }
+
+  zoomValueIsValid(zoom) {
+    return zoom >= 1 && zoom <= 18;
   }
 
   isReadyForEvent() {
@@ -106,7 +112,7 @@ export default class Lightning {
   }
 
   getTilesCount(canvasSize) {
-    let tilesCount = Math.ceil(canvasSize / this.options.tileSize) * 2;
+    let tilesCount = Math.ceil(canvasSize / this.options.tileSize) * this.options.tileAreaMultiplier;
 
     if (tilesCount % 2 === 0) {
       tilesCount++;
@@ -179,11 +185,18 @@ export default class Lightning {
   }
 
   calculateGrid() {
-    const horizontalTiles = this.getTilesCount(this.state.canvasDimensions[0]);
-    const verticalTiles = this.getTilesCount(this.state.canvasDimensions[1]);
-
     const centerY = TileConversion.lat2tile(this.options.center[0], this.options.zoom, false);
     const centerX = TileConversion.lon2tile(this.options.center[1], this.options.zoom, false);
+    const gridHash = [centerY, centerX].join(',');
+
+    const gridNeedsToBeUpdated = this.state.gridHash !== gridHash;
+
+    if (!gridNeedsToBeUpdated) {
+      return;
+    }
+
+    const horizontalTiles = this.getTilesCount(this.state.canvasDimensions[0]);
+    const verticalTiles = this.getTilesCount(this.state.canvasDimensions[1]);
 
     // noinspection JSSuspiciousNameCombination
     const centerYRounded = Math.floor(centerY);
@@ -214,12 +227,23 @@ export default class Lightning {
         const tileY = startY + y;
 
         if (tileX >= 0 && tileY >= 0) {
-          grid[x][y] = new Tile(tileX, tileY, this.options.zoom);
+          const tile = new Tile(tileX, tileY, this.options.zoom);
+
+          this.ensureTileAsset(tile);
+          grid[x][y] = tile;
         }
       }
     }
 
-    this.grid = grid;
+    this.state.grid = grid;
+    this.state.gridHash = gridHash;
+  }
+
+  ensureTileAsset(tile, expandTilesOnLoad = true) {
+    if (!(tile.id in this.state.tiles)) {
+      this.state.tiles[tile.id] = new Image();
+      this.state.tiles[tile.id].src = this.options.source(Math.floor(tile.x), Math.floor(tile.y), tile.zoom);
+    }
   }
 
   draw() {
@@ -248,14 +272,9 @@ export default class Lightning {
 
     for (let y = 0; y < verticalTiles; y++) {
       for (let x = 0; x < horizontalTiles; x++) {
-        const tile = this.grid[x][y];
+        const tile = this.state.grid[x][y];
 
         if (tile) {
-          if (!(tile.id in this.state.tiles)) {
-            this.state.tiles[tile.id] = new Image();
-            this.state.tiles[tile.id].src = this.options.source(Math.floor(tile.x), Math.floor(tile.y), tile.zoom);
-          }
-
           const tileX = this.state.moveOffset[0] + this.state.centerOffset[0]
             + (x * this.options.tileSize - horizontalOverflow / 2);
 
