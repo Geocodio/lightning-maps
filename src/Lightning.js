@@ -79,11 +79,28 @@ export default class Lightning {
 
     this.canvas.addEventListener('mousedown', event => {
       event.preventDefault();
-      this.state.dragStartPosition = [event.clientX, event.clientY];
+      this.state.dragStartPosition = [event.clientX - this.state.moveOffset[0], event.clientY - this.state.moveOffset[1]];
     });
 
     this.canvas.addEventListener('mouseup', event => {
       event.preventDefault();
+
+      const x = this.state.dragStartPosition[0] - event.clientX;
+      const y = this.state.dragStartPosition[1] - event.clientY;
+
+      if (this.state.moveOffset[0] >= 0 && this.state.moveOffset[1] >= 0) {
+        const velocity = Math.max(Math.abs(x - this.state.moveOffset[0]), Math.abs(y - this.state.moveOffset[1]));
+
+        if (velocity > 800) {
+          this.state.targetMoveOffset = [
+            -x * this.options.panAccelerationMultiplier,
+            -y * this.options.panAccelerationMultiplier
+          ];
+
+          this.state.moveAnimationStart = window.performance.now();
+        }
+      }
+
       this.state.dragStartPosition = null;
     });
 
@@ -95,12 +112,10 @@ export default class Lightning {
         const x = this.state.dragStartPosition[0] - event.clientX;
         const y = this.state.dragStartPosition[1] - event.clientY;
 
-        this.state.targetMoveOffset = [
-          -x * this.options.panAccelerationMultiplier,
-          -y * this.options.panAccelerationMultiplier
+        this.state.moveOffset = this.state.targetMoveOffset = [
+          -x,
+          -y
         ];
-
-        this.state.moveAnimationStart = window.performance.now();
       }
 
       return false;
