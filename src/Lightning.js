@@ -20,6 +20,8 @@ export default class Lightning {
     this.attachEvents();
     this.applyStyles();
 
+    this.lastDrawState = null;
+
     this.draw = this.draw.bind(this);
     window.requestAnimationFrame(this.draw);
   }
@@ -37,7 +39,8 @@ export default class Lightning {
       dragStartPosition: null,
       lastEventActionTime: null,
       targetZoom: this.options.zoom,
-      zoomAnimationStart: null
+      zoomAnimationStart: null,
+      scale: 1
     };
   }
 
@@ -46,6 +49,16 @@ export default class Lightning {
       this.state.lastEventActionTime = new Date().getTime();
       this.state.zoomAnimationStart = window.performance.now();
       this.state.targetZoom = zoom;
+    }
+  }
+
+  setTargetMoveOffset(x, y, animated = true) {
+    this.state.targetMoveOffset = [x, y];
+
+    if (animated) {
+      this.state.moveAnimationStart = window.performance.now();
+    } else {
+      this.state.moveOffset = this.state.targetMoveOffset;
     }
   }
 
@@ -70,9 +83,9 @@ export default class Lightning {
 
       if (this.isReadyForEvent()) {
         if (event.deltaY > 5) {
-          this.setZoom(this.options.zoom - 2);
+          this.setZoom(this.options.zoom - 1);
         } else if (event.deltaY < -5) {
-          this.setZoom(this.options.zoom + 2);
+          this.setZoom(this.options.zoom + 1);
         }
       }
     });
@@ -80,19 +93,16 @@ export default class Lightning {
     this.canvas.addEventListener('dblclick', event => {
       event.preventDefault();
 
-      /*
       const centerX = this.state.canvasDimensions[0] / 2;
       const centerY = this.state.canvasDimensions[1] / 2;
 
-      this.state.targetMoveOffset = [
+      this.setTargetMoveOffset(
         -(event.clientX - centerX),
         -(event.clientY - centerY)
-      ];
-      */
+      );
 
-      this.setZoom(this.options.zoom + 1);
-
-      this.state.moveAnimationStart = window.performance.now();
+      // TODO: This is a hack
+      setTimeout(() => this.setZoom(this.options.zoom + 1), 1000);
     });
 
     this.canvas.addEventListener('mousedown', event => {
@@ -113,12 +123,10 @@ export default class Lightning {
         const velocity = Math.max(Math.abs(x - this.state.moveOffset[0]), Math.abs(y - this.state.moveOffset[1]));
 
         if (velocity > 800) {
-          this.state.targetMoveOffset = [
+          this.setTargetMoveOffset(
             -x * this.options.panAccelerationMultiplier,
             -y * this.options.panAccelerationMultiplier
-          ];
-
-          this.state.moveAnimationStart = window.performance.now();
+          );
         } else {
           this.updateCenter();
         }
@@ -134,10 +142,7 @@ export default class Lightning {
         const x = this.state.dragStartPosition[0] - event.clientX;
         const y = this.state.dragStartPosition[1] - event.clientY;
 
-        this.state.moveOffset = this.state.targetMoveOffset = [
-          -x,
-          -y
-        ];
+        this.setTargetMoveOffset(-x, -y, false);
       }
 
       return false;
@@ -196,8 +201,7 @@ export default class Lightning {
       this.options.tileSize
     );
 
-    this.state.moveOffset = [0, 0];
-    this.state.targetMoveOffset = [0, 0];
+    this.setTargetMoveOffset(0, 0, false);
     this.options.center = latLon;
   }
 
@@ -215,10 +219,10 @@ export default class Lightning {
 
       const scale = 1 - (this.state.targetZoom - this.options.zoom);
 
-      return Math.pow(2, scale);
+      this.state.scale = Math.pow(2, scale);
+    } else {
+      this.state.scale = 1;
     }
-
-    return 1;
   }
 
   calculateGrid() {
@@ -282,20 +286,39 @@ export default class Lightning {
     }
   }
 
+  shouldRedraw() {
+    const drawState = JSON.stringify([this.state, this.options]);
+
+    if (this.lastDrawState !== drawState) {
+      this.lastDrawState = drawState;
+
+      return true;
+    }
+
+    return false;
+  }
+
   draw() {
     this.context.setTransform(1, 0, 0, 1, 0, 0);
 
     this.updateMoveOffset();
+    this.updateZoom();
+    this.calculateGrid();
 
-    const scale = this.updateZoom();
-    const tileSize = this.options.tileSize * scale;
+    if (this.shouldRedraw()) {
+      this.drawTiles();
+    }
+
+    window.requestAnimationFrame(this.draw);
+  }
+
+  drawTiles() {
+    const tileSize = this.options.tileSize * this.state.scale;
 
     const centerOffset = [
       tileSize / 2 - (this.state.relativeTileOffset[0] * tileSize),
       tileSize / 2 - (this.state.relativeTileOffset[1] * tileSize)
     ];
-
-    this.calculateGrid();
 
     this.context.fillStyle = '#eee';
     this.context.fillRect(0, 0, this.state.canvasDimensions[0], this.state.canvasDimensions[1]);
@@ -343,8 +366,6 @@ export default class Lightning {
       this.context.arc(this.state.canvasDimensions[0] / 2, this.state.canvasDimensions[1] / 2, 5, 0, 2 * Math.PI);
       this.context.fill();
     }
-
-    window.requestAnimationFrame(this.draw);
   }
 
 }
