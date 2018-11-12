@@ -197,19 +197,17 @@ export default class Lightning {
     if (this.options.zoom !== this.state.targetZoom) {
       const timestamp = performance.now();
 
-      const length = 10000;
+      const length = 1000;
       const progress = Math.max(timestamp - this.state.zoomAnimationStart, 0);
       const percentage = this.easeOutQuad(progress / length);
 
       const newZoom = this.options.zoom + (this.state.targetZoom - this.options.zoom) * percentage;
 
-      this.options.zoom = this.state.targetZoom > this.options.zoom ? Math.ceil(newZoom) : Math.floor(newZoom);
+      this.options.zoom = Math.round(newZoom * 100) / 100;
 
-      let scale = this.options.zoom - newZoom;
+      const scale = 1 - (this.state.targetZoom - this.options.zoom);
 
-      if (this.state.targetZoom > this.options.zoom) {
-        scale += 1;
-      }
+      // TODO: Handle zooming out
 
       return scale;
     }
@@ -218,8 +216,8 @@ export default class Lightning {
   }
 
   calculateGrid() {
-    const centerY = TileConversion.lat2tile(this.options.center[0], this.options.zoom, false);
-    const centerX = TileConversion.lon2tile(this.options.center[1], this.options.zoom, false);
+    const centerY = TileConversion.lat2tile(this.options.center[0], Math.floor(this.options.zoom), false);
+    const centerX = TileConversion.lon2tile(this.options.center[1], Math.floor(this.options.zoom), false);
     const gridHash = [centerY, centerX].join(',');
 
     const gridNeedsToBeUpdated = this.state.gridHash !== gridHash;
@@ -260,7 +258,7 @@ export default class Lightning {
         const tileY = startY + y;
 
         if (tileX >= 0 && tileY >= 0) {
-          const tile = new Tile(tileX, tileY, this.options.zoom);
+          const tile = new Tile(tileX, tileY, Math.floor(this.options.zoom));
 
           this.ensureTileAsset(tile);
           grid[x][y] = tile;
@@ -275,7 +273,11 @@ export default class Lightning {
   ensureTileAsset(tile, expandTilesOnLoad = true) {
     if (!(tile.id in this.state.tiles)) {
       this.state.tiles[tile.id] = new Image();
+      this.state.tiles[tile.id].loaded = false;
       this.state.tiles[tile.id].src = this.options.source(Math.floor(tile.x), Math.floor(tile.y), tile.zoom);
+      this.state.tiles[tile.id].onload = () => {
+        this.state.tiles[tile.id].loaded = true;
+      };
     }
   }
 
@@ -286,8 +288,7 @@ export default class Lightning {
     const scale = this.updateZoom();
 
     if (scale !== 1) {
-      console.log(scale);
-      this.context.scale(scale, scale);
+      this.context.scale(scale, scale, this.state.canvasDimensions[0] / 2, this.state.canvasDimensions[1] / 2);
     }
 
     this.calculateGrid();
