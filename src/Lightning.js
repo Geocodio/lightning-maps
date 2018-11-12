@@ -102,13 +102,12 @@ export default class Lightning {
       const centerX = this.state.canvasDimensions[0] / 2;
       const centerY = this.state.canvasDimensions[1] / 2;
 
+      this.setZoom(this.options.zoom + 1);
+
       this.setTargetMoveOffset(
         -(event.clientX - centerX),
         -(event.clientY - centerY)
       );
-
-      // TODO: This is a hack
-      setTimeout(() => this.setZoom(this.options.zoom + 1), 1000);
     });
 
     this.canvas.addEventListener('mousedown', event => {
@@ -166,9 +165,8 @@ export default class Lightning {
         this.state.mouseVelocityAboveThreshold.push([now, velocity > this.options.throwVelocityThreshold]);
 
         this.setTargetMoveOffset(x, y, false);
+        this.state.lastMouseMoveEvent = window.performance.now();
       }
-
-      this.state.lastMouseMoveEvent = window.performance.now();
 
       return false;
     });
@@ -236,7 +234,7 @@ export default class Lightning {
 
       const length = 1000;
       const progress = Math.max(timestamp - this.state.zoomAnimationStart, 0);
-      const percentage = progress / length; // this.easeOutQuad(progress / length);
+      const percentage = this.easeOutQuad(progress / length);
 
       const newZoom = this.options.zoom + (this.state.targetZoom - this.options.zoom) * percentage;
 
@@ -324,8 +322,6 @@ export default class Lightning {
   }
 
   draw() {
-    this.context.setTransform(1, 0, 0, 1, 0, 0);
-
     this.updateMoveOffset();
     this.updateZoom();
     this.calculateGrid();
