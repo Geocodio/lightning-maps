@@ -84,8 +84,8 @@ export default class Lightning {
       const centerY = this.state.canvasDimensions[1] / 2;
 
       this.state.targetMoveOffset = [
-        - (event.clientX - centerX),
-        - (event.clientY - centerY)
+        -(event.clientX - centerX),
+        -(event.clientY - centerY)
       ];
 
       this.setZoom(this.options.zoom + 1);
@@ -286,6 +286,7 @@ export default class Lightning {
     const scale = this.updateZoom();
 
     if (scale !== 1) {
+      console.log(scale);
       this.context.scale(scale, scale);
     }
 
@@ -331,12 +332,12 @@ export default class Lightning {
       }
     }
 
-    /*
-    this.context.fillStyle = 'rgba(200, 0, 0, 0.7)';
-    this.context.beginPath();
-    this.context.arc(this.state.canvasDimensions[0] / 2, this.state.canvasDimensions[1] / 2, 5, 0, 2 * Math.PI);
-    this.context.fill();
-    */
+    if (this.options.debug) {
+      this.context.fillStyle = 'rgba(200, 0, 0, 0.7)';
+      this.context.beginPath();
+      this.context.arc(this.state.canvasDimensions[0] / 2, this.state.canvasDimensions[1] / 2, 5, 0, 2 * Math.PI);
+      this.context.fill();
+    }
 
     window.requestAnimationFrame(this.draw);
   }

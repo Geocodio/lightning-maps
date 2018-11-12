@@ -4,21 +4,27 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Lightning Map</title>
+    <style type="text/css">
+    html, body {
+      margin: 0;
+    }
+    </style>
   </head>
   <body>
-    <noscript>
-      You need to enable JavaScript to run this app.
-    </noscript>
-    <canvas id="map" width="1200" height="800"></canvas>
+    <canvas id="map" width="800" height="600"></canvas>
     <script src="../lib/LightningMap.js"></script>
     <script>
-    LightningMap(document.getElementById('map'), {
+    var canvas = document.getElementById('map');
+    canvas.width = document.documentElement.clientWidth;
+    canvas.height = document.documentElement.clientHeight;
+
+    LightningMap(canvas, {
       source: function (x, y, z) {
         return `https://maps.geocod.io/tiles/base/${z}/${x}/${y}.png`;
       },
       zoom: 12,
       center: [38.841779, -77.088312],
-      debug: false
+      debug: true
     });
     </script>
   </body>
