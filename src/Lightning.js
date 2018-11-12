@@ -77,9 +77,28 @@ export default class Lightning {
       }
     });
 
+    this.canvas.addEventListener('dblclick', event => {
+      event.preventDefault();
+
+      const centerX = this.state.canvasDimensions[0] / 2;
+      const centerY = this.state.canvasDimensions[1] / 2;
+
+      this.state.targetMoveOffset = [
+        - (event.clientX - centerX),
+        - (event.clientY - centerY)
+      ];
+
+      this.setZoom(this.options.zoom + 1);
+
+      this.state.moveAnimationStart = window.performance.now();
+    });
+
     this.canvas.addEventListener('mousedown', event => {
       event.preventDefault();
-      this.state.dragStartPosition = [event.clientX - this.state.moveOffset[0], event.clientY - this.state.moveOffset[1]];
+      this.state.dragStartPosition = [
+        event.clientX - this.state.moveOffset[0],
+        event.clientY - this.state.moveOffset[1]
+      ];
     });
 
     this.canvas.addEventListener('mouseup', event => {
@@ -108,7 +127,6 @@ export default class Lightning {
       event.preventDefault();
 
       if (this.state.dragStartPosition) {
-        this.state.lastEventActionTime = new Date().getTime();
         const x = this.state.dragStartPosition[0] - event.clientX;
         const y = this.state.dragStartPosition[1] - event.clientY;
 
@@ -164,7 +182,7 @@ export default class Lightning {
           this.state.moveOffset,
           this.options.center,
           this.options.zoom,
-          this.options.canvasDimensions,
+          this.state.canvasDimensions,
           this.options.tileSize
         );
 
@@ -316,7 +334,7 @@ export default class Lightning {
     /*
     this.context.fillStyle = 'rgba(200, 0, 0, 0.7)';
     this.context.beginPath();
-    this.context.arc(this.state.canvasDimensions[0] / 2, this.state.canvasDimensions[1] / 2, 10, 0, 2 * Math.PI);
+    this.context.arc(this.state.canvasDimensions[0] / 2, this.state.canvasDimensions[1] / 2, 5, 0, 2 * Math.PI);
     this.context.fill();
     */
 
