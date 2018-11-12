@@ -40,7 +40,9 @@ export default class Lightning {
       lastEventActionTime: null,
       targetZoom: this.options.zoom,
       zoomAnimationStart: null,
-      scale: 1
+      scale: 1,
+      lastMouseMoveEvent: null,
+      mouseVelocityAboveThreshold: []
     };
   }
 
@@ -77,6 +79,10 @@ export default class Lightning {
     return milliSecondsSinceLastEvent > DEBOUNCE_INTERVAL_MS;
   }
 
+  calculateVelocity(position1, position2, time1, time2) {
+    return ((position1 - position2) / (time1 - time2)) * 1000;
+  }
+
   attachEvents() {
     this.canvas.addEventListener('wheel', event => {
       event.preventDefault();
@@ -107,6 +113,9 @@ export default class Lightning {
 
     this.canvas.addEventListener('mousedown', event => {
       event.preventDefault();
+
+      this.state.mouseVelocityAboveThreshold = [];
+
       this.state.dragStartPosition = [
         event.clientX - this.state.moveOffset[0],
         event.clientY - this.state.moveOffset[1]
@@ -116,16 +125,21 @@ export default class Lightning {
     this.canvas.addEventListener('mouseup', event => {
       event.preventDefault();
 
-      const x = this.state.dragStartPosition[0] - event.clientX;
-      const y = this.state.dragStartPosition[1] - event.clientY;
+      const x = -(this.state.dragStartPosition[0] - event.clientX);
+      const y = -(this.state.dragStartPosition[1] - event.clientY);
 
-      if (this.state.moveOffset[0] >= 0 && this.state.moveOffset[1] >= 0) {
-        const velocity = Math.max(Math.abs(x - this.state.moveOffset[0]), Math.abs(y - this.state.moveOffset[1]));
+      if (this.state.moveOffset[0] !== 0 || this.state.moveOffset[1] !== 0) {
+        const now = window.performance.now();
+        const timingThreshold = now - this.options.throwTimingThresholdMs;
 
-        if (velocity > 800) {
+        const thresholdsToConsider = this.state.mouseVelocityAboveThreshold
+          .filter(threshold => threshold[0] > timingThreshold)
+          .filter(threshold => threshold[1]);
+
+        if (thresholdsToConsider.length > 0) {
           this.setTargetMoveOffset(
-            -x * this.options.panAccelerationMultiplier,
-            -y * this.options.panAccelerationMultiplier
+            x * this.options.panAccelerationMultiplier,
+            y * this.options.panAccelerationMultiplier
           );
         } else {
           this.updateCenter();
@@ -139,11 +153,22 @@ export default class Lightning {
       event.preventDefault();
 
       if (this.state.dragStartPosition) {
-        const x = this.state.dragStartPosition[0] - event.clientX;
-        const y = this.state.dragStartPosition[1] - event.clientY;
+        const x = -(this.state.dragStartPosition[0] - event.clientX);
+        const y = -(this.state.dragStartPosition[1] - event.clientY);
 
-        this.setTargetMoveOffset(-x, -y, false);
+        const now = window.performance.now();
+
+        const vx = this.calculateVelocity(this.state.moveOffset[0], x, now, this.state.lastMouseMoveEvent);
+        const vy = this.calculateVelocity(this.state.moveOffset[1], y, now, this.state.lastMouseMoveEvent);
+
+        const velocity = Math.round(Math.sqrt((vx * vx) + (vy * vy)));
+
+        this.state.mouseVelocityAboveThreshold.push([now, velocity > this.options.throwVelocityThreshold]);
+
+        this.setTargetMoveOffset(x, y, false);
       }
+
+      this.state.lastMouseMoveEvent = window.performance.now();
 
       return false;
     });
