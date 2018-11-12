@@ -41,7 +41,7 @@ export default class TileConversion {
     };
   }
 
-  static pixelToLatLon(pixel, center, zoom, mapDimensions, tileSize) {
+  static pixelToLatLon(pixel, center, zoom, tileSize) {
     const pointDiff = [
       pixel[0] / tileSize,
       pixel[1] / tileSize
@@ -53,6 +53,19 @@ export default class TileConversion {
     return [
       TileConversion.tile2lat(tileY, zoom),
       TileConversion.tile2lon(tileX, zoom)
+    ];
+  }
+
+  static latLonToPixel(coord, center, zoom, tileSize, mapDimensions) {
+    const tileX = TileConversion.lon2tile(coord[1], zoom, false);
+    const tileY = TileConversion.lat2tile(coord[0], zoom, false);
+
+    const tileCenterX = TileConversion.lon2tile(center[1], zoom, false);
+    const tileCenterY = TileConversion.lat2tile(center[0], zoom, false);
+
+    return [
+      -(tileX - tileCenterX) * tileSize,
+      -(tileY - tileCenterY) * tileSize
     ];
   }
 }
