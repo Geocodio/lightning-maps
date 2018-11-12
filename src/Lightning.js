@@ -30,7 +30,7 @@ export default class Lightning {
       tiles: {},
       grid: [],
       gridHash: null,
-      centerOffset: [0, 0],
+      relativeTileOffset: [0, 0],
       moveOffset: [0, 0],
       targetMoveOffset: [0, 0],
       moveAnimationStart: null,
@@ -80,6 +80,7 @@ export default class Lightning {
     this.canvas.addEventListener('dblclick', event => {
       event.preventDefault();
 
+      /*
       const centerX = this.state.canvasDimensions[0] / 2;
       const centerY = this.state.canvasDimensions[1] / 2;
 
@@ -87,6 +88,7 @@ export default class Lightning {
         -(event.clientX - centerX),
         -(event.clientY - centerY)
       ];
+      */
 
       this.setZoom(this.options.zoom + 1);
 
@@ -117,6 +119,8 @@ export default class Lightning {
           ];
 
           this.state.moveAnimationStart = window.performance.now();
+        } else {
+          this.updateCenter();
         }
       }
 
@@ -178,19 +182,23 @@ export default class Lightning {
         === Object.values(this.state.targetMoveOffset).join(',');
 
       if (targetHasBeenReached) {
-        const latLon = TileConversion.pixelToLatLon(
-          this.state.moveOffset,
-          this.options.center,
-          this.options.zoom,
-          this.state.canvasDimensions,
-          this.options.tileSize
-        );
-
-        this.state.moveOffset = [0, 0];
-        this.state.targetMoveOffset = [0, 0];
-        this.options.center = latLon;
+        this.updateCenter();
       }
     }
+  }
+
+  updateCenter() {
+    const latLon = TileConversion.pixelToLatLon(
+      this.state.moveOffset,
+      this.options.center,
+      this.options.zoom,
+      this.state.canvasDimensions,
+      this.options.tileSize
+    );
+
+    this.state.moveOffset = [0, 0];
+    this.state.targetMoveOffset = [0, 0];
+    this.options.center = latLon;
   }
 
   updateZoom() {
@@ -199,7 +207,7 @@ export default class Lightning {
 
       const length = 1000;
       const progress = Math.max(timestamp - this.state.zoomAnimationStart, 0);
-      const percentage = this.easeOutQuad(progress / length);
+      const percentage = progress / length; // this.easeOutQuad(progress / length);
 
       const newZoom = this.options.zoom + (this.state.targetZoom - this.options.zoom) * percentage;
 
@@ -207,9 +215,7 @@ export default class Lightning {
 
       const scale = 1 - (this.state.targetZoom - this.options.zoom);
 
-      // TODO: Handle zooming out
-
-      return scale;
+      return Math.pow(2, scale);
     }
 
     return 1;
@@ -233,14 +239,9 @@ export default class Lightning {
     const centerYRounded = Math.floor(centerY);
     const centerXRounded = Math.floor(centerX);
 
-    const relativeTileOffset = [
+    this.state.relativeTileOffset = [
       Math.abs(centerX - centerXRounded),
       Math.abs(centerY - centerYRounded)
-    ];
-
-    this.state.centerOffset = [
-      this.options.tileSize / 2 - (relativeTileOffset[0] * this.options.tileSize),
-      this.options.tileSize / 2 - (relativeTileOffset[1] * this.options.tileSize)
     ];
 
     const startX = centerXRounded - Math.floor(horizontalTiles / 2);
@@ -285,11 +286,14 @@ export default class Lightning {
     this.context.setTransform(1, 0, 0, 1, 0, 0);
 
     this.updateMoveOffset();
-    const scale = this.updateZoom();
 
-    if (scale !== 1) {
-      this.context.scale(scale, scale, this.state.canvasDimensions[0] / 2, this.state.canvasDimensions[1] / 2);
-    }
+    const scale = this.updateZoom();
+    const tileSize = this.options.tileSize * scale;
+
+    const centerOffset = [
+      tileSize / 2 - (this.state.relativeTileOffset[0] * tileSize),
+      tileSize / 2 - (this.state.relativeTileOffset[1] * tileSize)
+    ];
 
     this.calculateGrid();
 
@@ -299,8 +303,8 @@ export default class Lightning {
     const horizontalTiles = this.getTilesCount(this.state.canvasDimensions[0]);
     const verticalTiles = this.getTilesCount(this.state.canvasDimensions[1]);
 
-    const horizontalOverflow = (horizontalTiles * this.options.tileSize) - this.state.canvasDimensions[0];
-    const verticalOverflow = (verticalTiles * this.options.tileSize) - this.state.canvasDimensions[1];
+    const horizontalOverflow = (horizontalTiles * tileSize) - this.state.canvasDimensions[0];
+    const verticalOverflow = (verticalTiles * tileSize) - this.state.canvasDimensions[1];
 
     this.context.fillStyle = '#C5DFF6';
     this.context.strokeStyle = 'green';
@@ -310,24 +314,24 @@ export default class Lightning {
         const tile = this.state.grid[x][y];
 
         if (tile) {
-          const tileX = this.state.moveOffset[0] + this.state.centerOffset[0]
-            + (x * this.options.tileSize - horizontalOverflow / 2);
+          const tileX = this.state.moveOffset[0] + centerOffset[0]
+            + (x * tileSize - horizontalOverflow / 2);
 
-          const tileY = this.state.moveOffset[1] + this.state.centerOffset[1]
-            + (y * this.options.tileSize - verticalOverflow / 2);
+          const tileY = this.state.moveOffset[1] + centerOffset[1]
+            + (y * tileSize - verticalOverflow / 2);
 
           try {
             this.context.drawImage(
               this.state.tiles[tile.id],
               tileX, tileY,
-              this.options.tileSize, this.options.tileSize
+              tileSize, tileSize
             );
           } catch (err) {
-            this.context.fillRect(tileX, tileY, this.options.tileSize, this.options.tileSize);
+            this.context.fillRect(tileX, tileY, tileSize, tileSize);
           }
 
           if (this.options.debug) {
-            this.context.strokeRect(tileX, tileY, this.options.tileSize, this.options.tileSize);
+            this.context.strokeRect(tileX, tileY, tileSize, tileSize);
           }
         }
       }
