@@ -43,16 +43,20 @@ export default class Marker {
   }
 
   renderCircle(context, position) {
+    context.save();
     context.beginPath();
     context.arc(position[0], position[1], 5, 0, 2 * Math.PI);
     context.fill();
+    context.restore();
   }
 
   renderDonut(context, position) {
+    context.save();
     context.beginPath();
     context.lineWidth = 5;
     context.arc(position[0], position[1], 7, 0, 2 * Math.PI);
     context.stroke();
+    context.restore();
   }
 
   renderMarker(context, position) {
