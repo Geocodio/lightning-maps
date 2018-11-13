@@ -1,6 +1,7 @@
 import TileConversion from './TileConversion';
 import Tile from './Tile';
-import defaultOptions from './defaultOptions';
+import Marker from './Marker';
+import { defaultMapOptions } from './defaultOptions';
 
 const DEBOUNCE_INTERVAL_MS = 200;
 
@@ -14,7 +15,7 @@ export default class Lightning {
     this.canvas = canvas;
     this.context = this.canvas.getContext('2d');
 
-    this.options = Object.assign({}, defaultOptions, options);
+    this.options = Object.assign({}, defaultMapOptions, options);
 
     this.initializeState();
     this.attachEvents();
@@ -44,7 +45,8 @@ export default class Lightning {
       zoomAnimationStart: null,
       scale: 1,
       lastMouseMoveEvent: null,
-      mouseVelocityAboveThreshold: []
+      mouseVelocityAboveThreshold: [],
+      markers: []
     };
   }
 
@@ -366,6 +368,7 @@ export default class Lightning {
 
     if (this.shouldRedraw()) {
       this.drawTiles();
+      this.drawMarkers();
     }
 
     window.requestAnimationFrame(this.draw);
@@ -443,6 +446,38 @@ export default class Lightning {
 
     this.context.strokeStyle = '#CCC';
     this.context.strokeRect(x, y, size, size);
+  }
+
+  drawMarkers() {
+    const visibleMarkers = this.state.markers; // .filter(marker =>);
+
+    const center = [
+      this.state.canvasDimensions[0] / 2,
+      this.state.canvasDimensions[1] / 2,
+    ];
+
+    visibleMarkers.map(marker => {
+      const position = TileConversion.latLonToPixel(
+        marker.coords,
+        this.options.center,
+        this.options.zoom,
+        this.options.tileSize,
+        this.state.canvasDimensions
+      );
+
+      marker.render(this.context, [
+        center[0] - position[0],
+        center[1] - position[1],
+      ]);
+    });
+  }
+
+  addMarker(marker) {
+    this.state.markers.push(marker);
+  }
+
+  static createMarker() {
+    return new Marker(...arguments);
   }
 
 }

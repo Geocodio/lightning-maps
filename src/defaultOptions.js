@@ -1,4 +1,4 @@
-const defaultOptions = {
+export const defaultMapOptions = {
   /**
    * Common options
    */
@@ -50,4 +50,11 @@ const defaultOptions = {
   debug: false
 };
 
-export default defaultOptions;
+export const defaultMarkerOptions = {
+  color: 'rgba(0, 0, 200, 0.7)',
+
+  /**
+   * Valid values: marker, circle
+   */
+  type: 'marker',
+};
