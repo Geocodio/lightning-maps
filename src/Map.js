@@ -1,6 +1,5 @@
 import TileConversion from './TileConversion';
 import Tile from './Tile';
-import Marker from './Marker';
 import { defaultMapOptions } from './defaultOptions';
 
 const DEBOUNCE_INTERVAL_MS = 200;
@@ -453,7 +452,7 @@ export default class Lightning {
 
     const center = [
       this.state.canvasDimensions[0] / 2,
-      this.state.canvasDimensions[1] / 2,
+      this.state.canvasDimensions[1] / 2
     ];
 
     visibleMarkers.map(marker => {
@@ -467,17 +466,13 @@ export default class Lightning {
 
       marker.render(this.context, [
         center[0] - position[0] + this.state.moveOffset[0],
-        center[1] - position[1] + this.state.moveOffset[1],
+        center[1] - position[1] + this.state.moveOffset[1]
       ]);
     });
   }
 
   addMarker(marker) {
     this.state.markers.push(marker);
-  }
-
-  static createMarker() {
-    return new Marker(...arguments);
   }
 
 }

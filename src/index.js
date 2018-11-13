@@ -1,3 +1,4 @@
-import Lightning from './Lightning';
+import Map from './Map';
+import Marker from './Marker';
 
-export default Lightning;
+export default { Map, Marker };

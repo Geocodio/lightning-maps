@@ -18,7 +18,7 @@
     canvas.width = document.documentElement.clientWidth;
     canvas.height = document.documentElement.clientHeight;
 
-    var map = new LightningMap(canvas, {
+    var map = new LightningMap.Map(canvas, {
       source: function (x, y, z) {
         return `https://maps.geocod.io/tiles/base/${z}/${x}/${y}.png`;
       },
@@ -26,10 +26,10 @@
       center: [38.86530697026126, -77.20057854052735]
     });
 
-    map.addMarker(LightningMap.createMarker([38.882666, -77.170150]))
-    map.addMarker(LightningMap.createMarker([38.91, -77.24], { color: 'rgba(200, 0, 0, 0.7)'}))
-    map.addMarker(LightningMap.createMarker([38.88, -77.19], { color: 'rgba(0, 0, 0, 0.7)', type: 'circle' }))
-    map.addMarker(LightningMap.createMarker([38.86, -77.16], { color: 'rgba(0, 200, 200, 0.7)', type: 'donut' }))
+    map.addMarker(new LightningMap.Marker([38.882666, -77.170150]))
+    map.addMarker(new LightningMap.Marker([38.91, -77.24], { color: 'rgba(200, 0, 0, 0.7)'}))
+    map.addMarker(new LightningMap.Marker([38.88, -77.19], { color: 'rgba(0, 0, 0, 0.7)', type: 'circle' }))
+    map.addMarker(new LightningMap.Marker([38.86, -77.16], { color: 'rgba(0, 200, 200, 0.7)', type: 'donut' }))
     </script>
   </body>
 </html>

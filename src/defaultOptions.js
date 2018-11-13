@@ -51,10 +51,14 @@ export const defaultMapOptions = {
 };
 
 export const defaultMarkerOptions = {
+  /**
+   * What color should the marker be?
+   * Supports hex, rgb and rgba values
+   */
   color: 'rgba(0, 0, 200, 0.7)',
 
   /**
-   * Valid values: marker, circle
+   * Valid values: marker, circle, donut
    */
-  type: 'marker',
+  type: 'marker'
 };

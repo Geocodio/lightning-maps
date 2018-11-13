@@ -18,7 +18,7 @@
     canvas.width = document.documentElement.clientWidth;
     canvas.height = document.documentElement.clientHeight;
 
-    new LightningMap(canvas, {
+    new LightningMap.Map(canvas, {
       source: function (x, y, z) {
         return `https://maps.geocod.io/tiles/base/${z}/${x}/${y}.png`;
       },
