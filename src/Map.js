@@ -335,17 +335,47 @@ export default class Lightning {
 
     this.state.grid = grid;
     this.state.gridHash = gridHash;
+
+    this.garbageCollect();
   }
 
   ensureTileAsset(tile, expandTilesOnLoad = true) {
     if (!(tile.id in this.state.tiles)) {
       this.state.tiles[tile.id] = new Image();
-      this.state.tiles[tile.id].loaded = false;
+      this.state.tiles[tile.id].tileId = tile.id;
       this.state.tiles[tile.id].src = this.options.source(Math.floor(tile.x), Math.floor(tile.y), tile.zoom);
+      this.state.tiles[tile.id].loaded = false;
       this.state.tiles[tile.id].onload = () => {
         this.state.tiles[tile.id].loaded = true;
       };
     }
+
+    this.state.tiles[tile.id].lastRequested = new Date().getTime();
+  }
+
+  garbageCollect() {
+    const allTiles = Object.values(this.state.tiles);
+
+    if (allTiles.length > this.maxTilesToKeep()) {
+      const tileExpirationCutOff = new Date().getTime() - 5000;
+
+      const tilesToConsider = allTiles
+        .filter(tile => tile.lastRequested < tileExpirationCutOff)
+        .sort((a, b) => ~~(a.lastRequested < b.lastRequested));
+
+      const tilesToDeleteCount = this.maxTilesToKeep() - (allTiles.length - tilesToConsider.length);
+
+      tilesToConsider
+        .splice(tilesToConsider.length - tilesToDeleteCount)
+        .forEach(tile => {
+          tile.src = '';
+          delete this.state.tiles[tile.tileId];
+        });
+    }
+  }
+
+  maxTilesToKeep() {
+    return 1000;
   }
 
   shouldRedraw() {
