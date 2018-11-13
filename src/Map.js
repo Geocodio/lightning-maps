@@ -1,5 +1,6 @@
 import TileConversion from './TileConversion';
 import Tile from './Tile';
+import Marker from './Marker';
 import { defaultMapOptions } from './defaultOptions';
 
 const DEBOUNCE_INTERVAL_MS = 200;
@@ -447,8 +448,33 @@ export default class Lightning {
     this.context.strokeRect(x, y, size, size);
   }
 
+  getMapBounds() {
+    const nw = TileConversion.pixelToLatLon(
+      [this.state.canvasDimensions[0] / 2, (this.state.canvasDimensions[1] / 2)],
+      this.options.center,
+      this.options.zoom,
+      this.options.tileSize
+    );
+
+    const se = TileConversion.pixelToLatLon(
+      [-this.state.canvasDimensions[0] / 2, -(this.state.canvasDimensions[1] / 2)],
+      this.options.center,
+      this.options.zoom,
+      this.options.tileSize
+    );
+
+    return {
+      nw, se
+    };
+  }
+
   drawMarkers() {
-    const visibleMarkers = this.state.markers; // .filter(marker =>);
+    const bounds = this.getMapBounds();
+
+    const visibleMarkers = this.state.markers.filter(marker => {
+      return marker.coords[0] <= bounds.nw[0] && marker.coords[0] >= bounds.se[0]
+        && marker.coords[1] >= bounds.nw[1] && marker.coords[1] <= bounds.se[1];
+    });
 
     const center = [
       this.state.canvasDimensions[0] / 2,
