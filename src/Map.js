@@ -1,6 +1,5 @@
 import TileConversion from './TileConversion';
 import Tile from './Tile';
-import Marker from './Marker';
 import { defaultMapOptions } from './defaultOptions';
 
 const DEBOUNCE_INTERVAL_MS = 200;
