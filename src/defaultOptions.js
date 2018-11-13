@@ -18,10 +18,16 @@ export const defaultMapOptions = {
   panAccelerationMultiplier: 2,
 
   /**
+   * The maximum acceleration constant for when the map is thrown. This is in place to avoid
+   * super-sonic acceleration speeds :)
+   */
+  maxPanAcceleration: 3.5,
+
+  /**
    * Only consider high velocity mouse movements that has been performed within this timing
    * threshold (in milliseconds)
    */
-  throwTimingThresholdMs: 250,
+  throwTimingThresholdMs: 100,
 
   /**
    * If the mouse panning velocity is above this threshold, it is considering a throw rather than

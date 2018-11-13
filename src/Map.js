@@ -149,10 +149,18 @@ export default class Lightning {
           .filter(threshold => threshold[0] > timingThreshold)
           .map(threshold => threshold[1]);
 
-        const averageVelocity = thresholdsToConsider.reduce((accumulator, velocity) => accumulator + velocity, 0) / thresholdsToConsider.length;
+        const velocitySum = thresholdsToConsider.reduce(
+          (accumulator, velocity) => accumulator + velocity,
+          0
+        );
+
+        const averageVelocity = velocitySum / thresholdsToConsider.length;
 
         if (averageVelocity >= this.options.throwVelocityThreshold) {
-          const multiplier = averageVelocity / this.options.throwVelocityThreshold * this.options.panAccelerationMultiplier;
+          let multiplier = averageVelocity / this.options.throwVelocityThreshold
+            * this.options.panAccelerationMultiplier;
+
+          multiplier = Math.min(multiplier, this.options.maxPanAcceleration);
 
           this.setTargetMoveOffset(
             x * multiplier,
