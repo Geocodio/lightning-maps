@@ -25,21 +25,34 @@ export default class Marker {
       case 'circle':
         renderFunction = this.renderCircle;
         break;
+
+      case 'donut':
+        renderFunction = this.renderDonut;
+        break;
     }
 
     if (!renderFunction) {
       throw new Error(`Unsupported marker type: "${this.options.type}"`);
     } else {
+      context.fillStyle = this.options.color;
+      context.strokeStyle = this.options.color;
+
       renderFunction = renderFunction.bind(this);
       renderFunction(context, position);
     }
   }
 
   renderCircle(context, position) {
-    context.fillStyle = 'rgba(200, 0, 0, 0.7)';
     context.beginPath();
     context.arc(position[0], position[1], 5, 0, 2 * Math.PI);
     context.fill();
+  }
+
+  renderDonut(context, position) {
+    context.beginPath();
+    context.lineWidth = 5;
+    context.arc(position[0], position[1], 7, 0, 2 * Math.PI);
+    context.stroke();
   }
 
   renderMarker(context, position) {
@@ -63,7 +76,6 @@ export default class Marker {
     context.bezierCurveTo(24.273437, 11.656109, 33.553042, 2.376504, 45.000000, 2.376504);
     context.bezierCurveTo(56.446958, 2.376504, 65.726563, 11.654442, 65.726563, 23.101399);
     context.bezierCurveTo(65.726563, 34.548357, 56.446958, 43.827962, 45.000000, 43.827962);
-    context.fillStyle = this.options.color;
     context.fill();
     context.restore();
   }
