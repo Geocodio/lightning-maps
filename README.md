@@ -17,19 +17,19 @@ Heavily inspired by [Pigeon Maps](https://github.com/mariusandra/pigeon-maps) an
 
 > Optional: You can also use your favorite module loader
 
-```
+```html
 <script src="LightningMap.min.js"></script>
 ```
 
 ### 2. Create a `<canvas>` element
 
-```
+```html
 <canvas id="map" width="800" height="600"></canvas>
 ```
 
 ### 3. Instantiate the map and add a marker
 
-```
+```javascript
 var map = new LightningMap.Map(canvas, {
   source: function (x, y, z) {
     return `https://maps.geocod.io/tiles/base/${z}/${x}/${y}.png`;
@@ -47,11 +47,11 @@ map.addMarker(new LightningMap.Marker([38.882666, -77.170150]))
 
 ## Development
 
-```
+```bash
 npm run dev
 npm run test:watch
 ```
 
-```
+```bash
 npm run build
 ```
