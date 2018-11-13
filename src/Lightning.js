@@ -379,7 +379,7 @@ export default class Lightning {
       tileSize / 2 - (this.state.relativeTileOffset[1] * tileSize)
     ];
 
-    this.context.fillStyle = '#eee';
+    this.context.fillStyle = '#EEE';
     this.context.fillRect(0, 0, this.state.canvasDimensions[0], this.state.canvasDimensions[1]);
 
     const horizontalTiles = this.getTilesCount(this.state.canvasDimensions[0]);
@@ -387,9 +387,6 @@ export default class Lightning {
 
     const horizontalOverflow = (horizontalTiles * tileSize) - this.state.canvasDimensions[0];
     const verticalOverflow = (verticalTiles * tileSize) - this.state.canvasDimensions[1];
-
-    this.context.fillStyle = '#C5DFF6';
-    this.context.strokeStyle = 'green';
 
     for (let y = 0; y < verticalTiles; y++) {
       for (let x = 0; x < horizontalTiles; x++) {
@@ -403,16 +400,17 @@ export default class Lightning {
             + (y * tileSize - verticalOverflow / 2);
 
           try {
-            this.context.drawImage(
-              this.state.tiles[tile.id],
-              tileX, tileY,
-              tileSize, tileSize
-            );
+            if (this.state.tiles[tile.id].loaded) {
+              this.context.drawImage(this.state.tiles[tile.id], tileX, tileY, tileSize, tileSize);
+            } else {
+              this.drawGenericBackground(tileX, tileY, tileSize);
+            }
           } catch (err) {
-            this.context.fillRect(tileX, tileY, tileSize, tileSize);
+            this.drawGenericBackground(tileX, tileY, tileSize);
           }
 
           if (this.options.debug) {
+            this.context.strokeStyle = 'green';
             this.context.strokeRect(tileX, tileY, tileSize, tileSize);
           }
         }
@@ -425,6 +423,26 @@ export default class Lightning {
       this.context.arc(this.state.canvasDimensions[0] / 2, this.state.canvasDimensions[1] / 2, 5, 0, 2 * Math.PI);
       this.context.fill();
     }
+  }
+
+  drawGenericBackground(x, y, size) {
+    const increment = size / 8;
+
+    this.context.beginPath();
+    for (let lineX = increment; lineX < size; lineX += increment) {
+      for (let lineY = increment; lineY < size; lineY += increment) {
+        this.context.moveTo(x, y + lineY);
+        this.context.lineTo(x + size, y + lineY);
+
+        this.context.moveTo(x + lineX, y);
+        this.context.lineTo(x + lineX, y + size);
+      }
+    }
+    this.context.strokeStyle = '#DDD';
+    this.context.stroke();
+
+    this.context.strokeStyle = '#CCC';
+    this.context.strokeRect(x, y, size, size);
   }
 
 }
