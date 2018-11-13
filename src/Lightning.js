@@ -35,9 +35,11 @@ export default class Lightning {
       relativeTileOffset: [0, 0],
       moveOffset: [0, 0],
       targetMoveOffset: [0, 0],
+      targetMoveOffsetIsCoord: false,
       moveAnimationStart: null,
       dragStartPosition: null,
       lastEventActionTime: null,
+      startZoom: this.options.zoom,
       targetZoom: this.options.zoom,
       zoomAnimationStart: null,
       scale: 1,
@@ -48,18 +50,29 @@ export default class Lightning {
 
   setZoom(zoom) {
     if (this.zoomValueIsValid(zoom)) {
-      this.state.lastEventActionTime = new Date().getTime();
+      this.state.lastEventActionTime = window.performance.now();
       this.state.zoomAnimationStart = window.performance.now();
       this.state.targetZoom = zoom;
+      this.state.startZoom = this.options.zoom;
     }
   }
 
   setTargetMoveOffset(x, y, animated = true) {
-    this.state.targetMoveOffset = [x, y];
-
     if (animated) {
       this.state.moveAnimationStart = window.performance.now();
+
+      this.state.targetMoveOffset = TileConversion.pixelToLatLon(
+        [x, y],
+        this.options.center,
+        this.options.zoom,
+        this.options.tileSize
+      );
+
+      this.state.targetMoveOffsetIsCoord = true;
     } else {
+      this.state.targetMoveOffset = [x, y];
+      this.state.targetMoveOffsetIsCoord = false;
+
       this.state.moveOffset = this.state.targetMoveOffset;
     }
   }
@@ -73,7 +86,7 @@ export default class Lightning {
       return true;
     }
 
-    const now = new Date().getTime();
+    const now = window.performance.now();
     const milliSecondsSinceLastEvent = now - this.state.lastEventActionTime;
 
     return milliSecondsSinceLastEvent > DEBOUNCE_INTERVAL_MS;
@@ -102,12 +115,12 @@ export default class Lightning {
       const centerX = this.state.canvasDimensions[0] / 2;
       const centerY = this.state.canvasDimensions[1] / 2;
 
-      this.setZoom(this.options.zoom + 1);
-
       this.setTargetMoveOffset(
         -(event.clientX - centerX),
         -(event.clientY - centerY)
       );
+
+      this.setZoom(this.options.zoom + 1);
     });
 
     this.canvas.addEventListener('mousedown', event => {
@@ -195,19 +208,34 @@ export default class Lightning {
       !== Object.values(this.state.targetMoveOffset).join(',');
 
     if (targetMoveOffsetChanged) {
-      const timestamp = performance.now();
+      const timestamp = window.performance.now();
 
-      const length = 1500;
       const progress = Math.max(timestamp - this.state.moveAnimationStart, 0);
-      const percentage = this.easeOutQuad(progress / length);
+      const percentage = this.easeOutQuad(progress / this.options.animationDurationMs);
 
-      this.state.moveOffset = [
-        this.state.moveOffset[0] + (this.state.targetMoveOffset[0] - this.state.moveOffset[0]) * percentage,
-        this.state.moveOffset[1] + (this.state.targetMoveOffset[1] - this.state.moveOffset[1]) * percentage
-      ];
+      let targetMoveOffset = this.state.targetMoveOffset;
+
+      if (this.state.targetMoveOffsetIsCoord) {
+        targetMoveOffset = TileConversion.latLonToPixel(
+          this.state.targetMoveOffset,
+          this.options.center,
+          this.options.zoom,
+          this.options.tileSize,
+          this.state.canvasDimensions
+        );
+      }
+
+      if (percentage >= 0.9) {
+        this.state.moveOffset = targetMoveOffset;
+      } else {
+        this.state.moveOffset = [
+          this.state.moveOffset[0] + (targetMoveOffset[0] - this.state.moveOffset[0]) * percentage,
+          this.state.moveOffset[1] + (targetMoveOffset[1] - this.state.moveOffset[1]) * percentage
+        ];
+      }
 
       const targetHasBeenReached = Object.values(this.state.moveOffset).join(',')
-        === Object.values(this.state.targetMoveOffset).join(',');
+        === Object.values(targetMoveOffset).join(',');
 
       if (targetHasBeenReached) {
         this.updateCenter();
@@ -220,7 +248,6 @@ export default class Lightning {
       this.state.moveOffset,
       this.options.center,
       this.options.zoom,
-      this.state.canvasDimensions,
       this.options.tileSize
     );
 
@@ -230,17 +257,27 @@ export default class Lightning {
 
   updateZoom() {
     if (this.options.zoom !== this.state.targetZoom) {
-      const timestamp = performance.now();
+      const timestamp = window.performance.now();
 
-      const length = 1000;
       const progress = Math.max(timestamp - this.state.zoomAnimationStart, 0);
-      const percentage = this.easeOutQuad(progress / length);
+      const percentage = this.easeOutQuad(progress / this.options.animationDurationMs);
 
-      const newZoom = this.options.zoom + (this.state.targetZoom - this.options.zoom) * percentage;
+      const zoomDiff = Math.abs(this.state.targetZoom - this.state.startZoom);
+      let newZoomDiff = zoomDiff * percentage;
+      const isZoomInOperation = this.state.targetZoom > this.state.startZoom;
 
-      this.options.zoom = Math.round(newZoom * 100) / 100;
+      let newZoom = isZoomInOperation
+        ? this.state.startZoom + newZoomDiff
+        : this.state.startZoom - newZoomDiff;
 
-      const scale = 1 - (this.state.targetZoom - this.options.zoom);
+      if (percentage >= 0.9) {
+        newZoom = this.state.targetZoom;
+      }
+
+      this.options.zoom = newZoom;
+
+      let nominator = isZoomInOperation ? 1 : -1;
+      const scale = nominator - (this.state.targetZoom - this.options.zoom);
 
       this.state.scale = Math.pow(2, scale);
     } else {
@@ -289,6 +326,7 @@ export default class Lightning {
           const tile = new Tile(tileX, tileY, Math.floor(this.options.zoom));
 
           this.ensureTileAsset(tile);
+
           grid[x][y] = tile;
         }
       }

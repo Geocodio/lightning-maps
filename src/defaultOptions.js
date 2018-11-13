@@ -30,6 +30,11 @@ const defaultOptions = {
   throwVelocityThreshold: 8000,
 
   /**
+   * How quickly panning and zooming animations are executed (in milliseconds)
+   */
+  animationDurationMs: 500,
+
+  /**
    * Determines how many additional tiles that should be loaded, to decrease map load times when
    * panning the map around
 
