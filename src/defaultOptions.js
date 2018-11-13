@@ -27,7 +27,7 @@ export const defaultMapOptions = {
    * If the mouse panning velocity is above this threshold, it is considering a throw rather than
    * a regular pan. We use this to pan further when the mouse is moved quickly
    */
-  throwVelocityThreshold: 8000,
+  throwVelocityThreshold: 3000,
 
   /**
    * How quickly panning and zooming animations are executed (in milliseconds)

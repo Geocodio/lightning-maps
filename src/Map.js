@@ -44,7 +44,7 @@ export default class Lightning {
       zoomAnimationStart: null,
       scale: 1,
       lastMouseMoveEvent: null,
-      mouseVelocityAboveThreshold: [],
+      mouseVelocities: [],
       markers: []
     };
   }
@@ -127,7 +127,7 @@ export default class Lightning {
     this.canvas.addEventListener('mousedown', event => {
       event.preventDefault();
 
-      this.state.mouseVelocityAboveThreshold = [];
+      this.state.mouseVelocities = [];
 
       this.state.dragStartPosition = [
         event.clientX - this.state.moveOffset[0],
@@ -145,14 +145,18 @@ export default class Lightning {
         const now = window.performance.now();
         const timingThreshold = now - this.options.throwTimingThresholdMs;
 
-        const thresholdsToConsider = this.state.mouseVelocityAboveThreshold
+        const thresholdsToConsider = this.state.mouseVelocities
           .filter(threshold => threshold[0] > timingThreshold)
-          .filter(threshold => threshold[1]);
+          .map(threshold => threshold[1]);
 
-        if (thresholdsToConsider.length > 0) {
+        const averageVelocity = thresholdsToConsider.reduce((accumulator, velocity) => accumulator + velocity, 0) / thresholdsToConsider.length;
+
+        if (averageVelocity >= this.options.throwVelocityThreshold) {
+          const multiplier = averageVelocity / this.options.throwVelocityThreshold * this.options.panAccelerationMultiplier;
+
           this.setTargetMoveOffset(
-            x * this.options.panAccelerationMultiplier,
-            y * this.options.panAccelerationMultiplier
+            x * multiplier,
+            y * multiplier
           );
         } else {
           this.updateCenter();
@@ -176,7 +180,7 @@ export default class Lightning {
 
         const velocity = Math.round(Math.sqrt((vx * vx) + (vy * vy)));
 
-        this.state.mouseVelocityAboveThreshold.push([now, velocity > this.options.throwVelocityThreshold]);
+        this.state.mouseVelocities.push([now, velocity]);
 
         this.setTargetMoveOffset(x, y, false);
         this.state.lastMouseMoveEvent = window.performance.now();
