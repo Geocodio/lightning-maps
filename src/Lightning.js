@@ -466,8 +466,8 @@ export default class Lightning {
       );
 
       marker.render(this.context, [
-        center[0] - position[0],
-        center[1] - position[1],
+        center[0] - position[0] + this.state.moveOffset[0],
+        center[1] - position[1] + this.state.moveOffset[1],
       ]);
     });
   }
