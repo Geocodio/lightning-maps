@@ -2,9 +2,7 @@ import TileConversion from './TileConversion';
 import Tile from './Tile';
 import { defaultMapOptions } from './defaultOptions';
 
-const DEBOUNCE_INTERVAL_MS = 200;
-
-export default class Lightning {
+export default class Map {
 
   constructor(canvas, options) {
     if (!canvas || !canvas.getContext) {
@@ -90,7 +88,7 @@ export default class Lightning {
     const now = window.performance.now();
     const milliSecondsSinceLastEvent = now - this.state.lastEventActionTime;
 
-    return milliSecondsSinceLastEvent > DEBOUNCE_INTERVAL_MS;
+    return milliSecondsSinceLastEvent > this.options.debounceIntervalMs;
   }
 
   calculateVelocity(position1, position2, time1, time2) {
