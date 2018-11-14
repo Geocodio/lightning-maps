@@ -3,8 +3,10 @@ import Tile from './Tile';
 
 export default class TileLayer {
 
-  constructor(map) {
+  constructor(map, tilesZoomLevel = null) {
     this.map = map;
+    this.tilesZoomLevel = tilesZoomLevel;
+
     this.context = map.context;
 
     this.state = {
@@ -29,10 +31,10 @@ export default class TileLayer {
   }
 
   calculateGrid() {
-    const { center, zoom } = this.map.options;
+    const { state, options } = this.map;
 
-    const centerY = TileConversion.lat2tile(center[0], Math.round(zoom), false);
-    const centerX = TileConversion.lon2tile(center[1], Math.round(zoom), false);
+    const centerY = TileConversion.lat2tile(options.center[0], Math.round(this.tilesZoomLevel || options.zoom), false);
+    const centerX = TileConversion.lon2tile(options.center[1], Math.round(this.tilesZoomLevel || options.zoom), false);
     const gridHash = [centerY, centerX].join(',');
 
     const gridNeedsToBeUpdated = this.state.gridHash !== gridHash;
@@ -41,8 +43,8 @@ export default class TileLayer {
       return;
     }
 
-    const horizontalTiles = this.getTilesCount(this.map.state.canvasDimensions[0]);
-    const verticalTiles = this.getTilesCount(this.map.state.canvasDimensions[1]);
+    const horizontalTiles = this.getTilesCount(state.canvasDimensions[0]);
+    const verticalTiles = this.getTilesCount(state.canvasDimensions[1]);
 
     // noinspection JSSuspiciousNameCombination
     const centerYRounded = Math.floor(centerY);
@@ -68,11 +70,8 @@ export default class TileLayer {
         const tileY = startY + y;
 
         if (tileX >= 0 && tileY >= 0) {
-          const tile = new Tile(tileX, tileY, Math.round(zoom));
-
-          this.ensureTileAsset(tile);
-
-          grid[x][y] = tile;
+          grid[x][y] = new Tile(tileX, tileY, Math.round(this.tilesZoomLevel || options.zoom));
+          this.ensureTileAsset(grid[x][y]);
         }
       }
     }

@@ -41,7 +41,9 @@ export default class Map {
       lastMouseMoveEvent: null,
       mouseVelocities: [],
       markers: [],
-      tileLayer: new TileLayer(this)
+      tileLayers: [
+        new TileLayer(this)
+      ]
     };
   }
 
@@ -55,6 +57,8 @@ export default class Map {
       this.state.zoomAnimationStart = window.performance.now();
       this.state.targetZoom = zoom;
       this.state.startZoom = this.options.zoom;
+
+      this.state.tileLayers.push(new TileLayer(this, zoom));
     }
   }
 
@@ -219,8 +223,7 @@ export default class Map {
   }
 
   updateMoveOffset() {
-    const targetMoveOffsetChanged = Object.values(this.state.moveOffset).join(',')
-      !== Object.values(this.state.targetMoveOffset).join(',');
+    const targetMoveOffsetChanged = this.state.moveOffset !== this.state.targetMoveOffset;
 
     if (targetMoveOffsetChanged) {
       const timestamp = window.performance.now();
@@ -249,8 +252,7 @@ export default class Map {
         ];
       }
 
-      const targetHasBeenReached = Object.values(this.state.moveOffset).join(',')
-        === Object.values(targetMoveOffset).join(',');
+      const targetHasBeenReached = this.state.moveOffset === targetMoveOffset;
 
       if (targetHasBeenReached) {
         this.updateCenter();
@@ -275,7 +277,12 @@ export default class Map {
       const progress = Math.max(window.performance.now() - this.state.zoomAnimationStart, 0);
       const percentage = this.easeOutQuad(progress / this.options.animationDurationMs);
 
-      const differenceFromTarget = Math.abs(this.state.targetZoom - this.state.startZoom);
+      let differenceFromTarget = Math.abs(this.state.targetZoom - this.state.startZoom);
+
+      if (this.state.targetZoom <= this.state.startZoom) {
+        differenceFromTarget *= -1;
+      }
+
       const newZoomDiff = differenceFromTarget * percentage;
 
       this.options.zoom = percentage >= 0.99
@@ -286,6 +293,12 @@ export default class Map {
       const diff = this.options.zoom - roundedZoom;
 
       this.state.scale = Math.pow(2, diff);
+
+      if (this.options.zoom === this.state.targetZoom) {
+        // Replace top layer with the second layer
+        this.state.tileLayers.shift();
+        this.state.tileLayers[0].tilesZoomLevel = null;
+      }
     } else {
       this.state.scale = 1;
     }
@@ -331,11 +344,15 @@ export default class Map {
   draw() {
     this.updateMoveOffset();
     this.updateZoom();
-    this.state.tileLayer.calculateGrid();
+    this.state.tileLayers.forEach(tileLayer => tileLayer.calculateGrid());
     this.garbageCollect();
 
     if (this.shouldRedraw()) {
-      this.state.tileLayer.drawTiles(this.state.scale);
+      if (this.state.tileLayers.length > 0) {
+        // Only draw the top layer
+        this.state.tileLayers[0].drawTiles(this.state.scale);
+      }
+
       this.drawMarkers();
     }
 
