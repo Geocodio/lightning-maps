@@ -47,10 +47,16 @@ map.addMarker(new LightningMap.Marker([38.882666, -77.170150]))
 
 ## Development
 
+### Run local development build and tests
+
 ```bash
 npm run dev
 npm run test:watch
 ```
+
+> You can now head to [http://localhost:8081/docs/simple.html](http://localhost:8081/docs/simple.html) or [http://localhost:8081/docs/markers.html](http://localhost:8081/docs/markers.html) to test the app
+
+### Build library for distribution
 
 ```bash
 npm run build

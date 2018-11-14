@@ -4,8 +4,8 @@
   "description": "Produce universal library with webpack and es6",
   "main": "lib/LightningMap.js",
   "scripts": {
-    "build": "webpack --env dev && webpack --env build && cp lib/LightningMap.min.js docs && npm run test",
-    "dev": "webpack --progress --colors --watch --env dev",
+    "build": "rm docs/LightningMap.min.js && webpack --env dev && webpack --env build && cp lib/LightningMap.min.js docs && npm run test",
+    "dev": "rm docs/LightningMap.min.js && ln -s ../lib/LightningMap.js docs/LightningMap.min.js && webpack-dev-server --progress --colors --watch --env dev",
     "test": "mocha --require babel-register --colors ./test/*.spec.js",
     "test:watch": "mocha --require babel-register --colors -w ./test/*.spec.js"
   },
@@ -44,6 +44,7 @@
     "uglifyjs-webpack-plugin": "^1.2.7",
     "webpack": "^4.12.2",
     "webpack-cli": "^3.0.8",
+    "webpack-dev-server": "^3.1.10",
     "yargs": "^10.0.3"
   }
 }
