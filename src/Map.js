@@ -54,7 +54,8 @@ export default class Map {
   setZoom(zoom) {
     if (this.zoomValueIsValid(zoom)) {
       this.state.tileLayers.push(new TileLayer(this, zoom));
-      // this.state.tileLayers[0].tilesZoomLevel = this.options.zoom;
+      this.state.tileLayers[0].state.tilesZoomLevel = this.options.zoom;
+      this.state.tileLayers[0].state.shouldBeDeleted = true;
 
       this.state.lastEventActionTime = window.performance.now();
       this.state.zoomAnimationStart = window.performance.now();
@@ -294,17 +295,20 @@ export default class Map {
       const roundedZoom = Math.round(this.options.zoom);
       const diff = this.options.zoom - roundedZoom;
 
-      this.state.scale = Math.pow(2, diff);
+      if (this.state.tileLayers.length > 1) {
+        this.state.tileLayers[0].state.scale = 1 + percentage;
+        this.state.tileLayers[1].state.scale = Math.pow(2, diff);
+      } else {
+        this.state.tileLayers[0].state.scale = Math.pow(2, diff);
+      }
 
       if (this.options.zoom === this.state.targetZoom) {
         // Mark old tile layer for deletion
-        this.state.tileLayers.shift();
-        this.state.tileLayers[0].tilesZoomLevel = null;
+        // this.state.tileLayers.shift();
+        // this.state.tileLayers[0].state.tilesZoomLevel = null;
 
-        // this.state.tileLayers[this.state.tileLayers.length - 1].shouldBeDeleted = true;
+        // this.state.tileLayers[0].state.shouldBeDeleted = true;
       }
-    } else {
-      this.state.scale = 1;
     }
   }
 
@@ -352,17 +356,14 @@ export default class Map {
     this.garbageCollect();
 
     if (this.shouldRedraw()) {
-      // Delete tile layers that are ready for deletion and mostly loaded
-      /*
-      this.state.tileLayers = this.state.tileLayers
-        .filter(tileLayer => !(tileLayer.shouldBeDeleted && tileLayer.loadedPercentage() >= 0.9));
-
-      console.log(this.state.tileLayers.length);
-      */
+      if (this.state.tileLayers.length > 1 && this.state.tileLayers[1].loadedPercentage() >= 0.9) {
+        this.state.tileLayers = this.state.tileLayers
+          .filter(tileLayer => !tileLayer.state.shouldBeDeleted);
+      }
 
       if (this.state.tileLayers.length > 0) {
         // Only draw the top layer
-        this.state.tileLayers[0].drawTiles(this.state.scale);
+        this.state.tileLayers[0].drawTiles();
       }
 
       this.drawMarkers();

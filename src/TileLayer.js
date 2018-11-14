@@ -5,15 +5,15 @@ export default class TileLayer {
 
   constructor(map, tilesZoomLevel = null) {
     this.map = map;
-    this.tilesZoomLevel = tilesZoomLevel;
-    this.shouldBeDeleted = false;
-
     this.context = map.context;
 
     this.state = {
       grid: [],
       gridHash: null,
-      relativeTileOffset: [0, 0]
+      relativeTileOffset: [0, 0],
+      tilesZoomLevel,
+      scale: 1,
+      shouldBeDeleted: false
     };
   }
 
@@ -37,8 +37,9 @@ export default class TileLayer {
   calculateGrid() {
     const { state, options } = this.map;
 
-    const centerY = TileConversion.lat2tile(options.center[0], Math.round(this.tilesZoomLevel || options.zoom), false);
-    const centerX = TileConversion.lon2tile(options.center[1], Math.round(this.tilesZoomLevel || options.zoom), false);
+    const zoom = Math.round(this.state.tilesZoomLevel || options.zoom);
+    const centerY = TileConversion.lat2tile(options.center[0], zoom, false);
+    const centerX = TileConversion.lon2tile(options.center[1], zoom, false);
     const gridHash = [centerY, centerX].join(',');
 
     const gridNeedsToBeUpdated = this.state.gridHash !== gridHash;
@@ -74,7 +75,7 @@ export default class TileLayer {
         const tileY = startY + y;
 
         if (tileX >= 0 && tileY >= 0) {
-          grid[x][y] = new Tile(tileX, tileY, Math.round(this.tilesZoomLevel || options.zoom));
+          grid[x][y] = new Tile(tileX, tileY, zoom);
           this.ensureTileAsset(grid[x][y]);
         }
       }
@@ -100,11 +101,11 @@ export default class TileLayer {
     this.map.state.tiles[tile.id].lastRequested = new Date().getTime();
   }
 
-  drawTiles(scale) {
+  drawTiles() {
     const canvasWidth = this.map.state.canvasDimensions[0];
     const canvasHeight = this.map.state.canvasDimensions[1];
 
-    const tileSize = this.map.options.tileSize * scale;
+    const tileSize = this.map.options.tileSize * this.state.scale;
 
     const centerOffset = [
       tileSize / 2 - (this.state.relativeTileOffset[0] * tileSize),
