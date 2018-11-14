@@ -285,8 +285,9 @@ export default class Map {
       }
 
       const newZoomDiff = differenceFromTarget * percentage;
+      const remainingTime = this.options.animationDurationMs - progress;
 
-      this.options.zoom = percentage >= 0.99
+      this.options.zoom = remainingTime <= 5
         ? this.state.targetZoom
         : (this.state.startZoom + newZoomDiff);
 
