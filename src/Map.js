@@ -47,6 +47,10 @@ export default class Map {
     };
   }
 
+  getZoom() {
+    return this.options.zoom;
+  }
+
   setZoom(zoom) {
     if (this.zoomValueIsValid(zoom)) {
       this.state.lastEventActionTime = window.performance.now();

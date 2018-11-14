@@ -4,8 +4,8 @@
   "description": "Produce universal library with webpack and es6",
   "main": "lib/LightningMap.js",
   "scripts": {
-    "build": "rm docs/LightningMap.min.js && webpack --env dev && webpack --env build && cp lib/LightningMap.min.js docs && npm run test",
-    "dev": "rm docs/LightningMap.min.js && ln -s ../lib/LightningMap.js docs/LightningMap.min.js && webpack-dev-server --progress --colors --watch --env dev",
+    "build": "webpack --env dev && webpack --env build && cp lib/LightningMap.min.js docs/LightningMap.js && npm run test",
+    "dev": "rm docs/LightningMap.js && webpack-dev-server --progress --colors --watch --env dev",
     "test": "mocha --require babel-register --colors ./test/*.spec.js",
     "test:watch": "mocha --require babel-register --colors -w ./test/*.spec.js"
   },

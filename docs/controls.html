@@ -8,15 +8,40 @@
     html, body {
       margin: 0;
     }
+
+    canvas {
+      display: block;
+      margin: 0 auto;
+    }
+
+    button {
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue;
+      color: #fff;
+      margin: 0;
+      padding: 0.5rem 1rem;
+      font-weight: 700;
+      border-radius: .25rem;
+      background-color: #3490dc;
+      text-transform: none;
+      overflow: visible;
+      font-size: 14px;
+      line-height: 1.15;
+    }
+
+    button:hover {
+      background-color: #2779bd;
+    }
     </style>
   </head>
   <body>
     <canvas id="map" width="800" height="600"></canvas>
+
+    <button onClick="map.setZoom(map.getZoom() + 1)">Zoom in</button>
+    <button onClick="map.setZoom(map.getZoom() - 1)">Zoom out</button>
+
     <script src="LightningMap.js"></script>
     <script>
     var canvas = document.getElementById('map');
-    canvas.width = document.documentElement.clientWidth;
-    canvas.height = document.documentElement.clientHeight;
 
     var map = new LightningMap.Map(canvas, {
       source: function (x, y, z) {
@@ -25,11 +50,6 @@
       zoom: 12,
       center: [38.86530697026126, -77.20057854052735]
     });
-
-    map.addMarker(new LightningMap.Marker([38.882666, -77.170150]));
-    map.addMarker(new LightningMap.Marker([38.91, -77.24], { color: 'rgba(200, 0, 0, 0.7)'}));
-    map.addMarker(new LightningMap.Marker([38.88, -77.19], { color: 'rgba(0, 0, 0, 0.7)', type: 'circle' }));
-    map.addMarker(new LightningMap.Marker([38.86, -77.16], { color: 'rgba(0, 200, 200, 0.7)', type: 'donut' }));
     </script>
   </body>
 </html>
