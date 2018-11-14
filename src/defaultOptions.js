@@ -38,7 +38,7 @@ export const defaultMapOptions = {
   /**
    * How quickly panning and zooming animations are executed (in milliseconds)
    */
-  animationDurationMs: 500,
+  animationDurationMs: 300 * 10,
 
   /*
    * Used for debouncing events such as scrolling
@@ -52,7 +52,6 @@ export const defaultMapOptions = {
    * Minimum value: 1.25
    */
   tileAreaMultiplier: 2,
-  tileZoomMultiplier: 4, // TODO: Not used currently
 
   /**
    * When debug mode is enabled, additional rendering artifacts are drawn. Should only be used in

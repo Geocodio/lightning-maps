@@ -6,6 +6,7 @@ export default class TileLayer {
   constructor(map, tilesZoomLevel = null) {
     this.map = map;
     this.tilesZoomLevel = tilesZoomLevel;
+    this.shouldBeDeleted = false;
 
     this.context = map.context;
 
@@ -17,7 +18,10 @@ export default class TileLayer {
   }
 
   toJSON() {
-    return this.state;
+    return [
+      this.state,
+      this.loadedPercentage() // We want a change in loaded tiles to possibly trigger a redraw
+    ];
   }
 
   getTilesCount(canvasSize) {
@@ -171,5 +175,25 @@ export default class TileLayer {
 
     this.context.strokeStyle = '#CCC';
     this.context.strokeRect(x, y, size, size);
+  }
+
+  loadedPercentage() {
+    const horizontalTiles = this.getTilesCount(this.map.state.canvasDimensions[0]);
+    const verticalTiles = this.getTilesCount(this.map.state.canvasDimensions[1]);
+
+    const totalTiles = horizontalTiles * verticalTiles;
+    let loadedTiles = 0;
+
+    for (let y = 0; y < verticalTiles; y++) {
+      for (let x = 0; x < horizontalTiles; x++) {
+        const tile = this.state.grid[x][y];
+
+        if (this.map.state.tiles[tile.id].loaded) {
+          loadedTiles++;
+        }
+      }
+    }
+
+    return loadedTiles / totalTiles;
   }
 }
