@@ -252,7 +252,7 @@ export default class Map {
         );
       }
 
-      if (percentage >= 0.9) {
+      if (percentage >= 0.99) {
         this.state.moveOffset = targetMoveOffset;
       } else {
         this.state.moveOffset = [
@@ -284,37 +284,29 @@ export default class Map {
 
   updateZoom() {
     if (this.options.zoom !== this.state.targetZoom) {
-      const timestamp = window.performance.now();
-
-      const progress = Math.max(timestamp - this.state.zoomAnimationStart, 0);
+      const progress = Math.max(window.performance.now() - this.state.zoomAnimationStart, 0);
       const percentage = this.easeOutQuad(progress / this.options.animationDurationMs);
 
-      const zoomDiff = Math.abs(this.state.targetZoom - this.state.startZoom);
-      let newZoomDiff = zoomDiff * percentage;
-      const isZoomInOperation = this.state.targetZoom > this.state.startZoom;
-
-      let newZoom = isZoomInOperation
-        ? this.state.startZoom + newZoomDiff
-        : this.state.startZoom - newZoomDiff;
-
-      if (percentage >= 0.9) {
-        newZoom = this.state.targetZoom;
-      }
+      const differenceFromTarget = Math.abs(this.state.targetZoom - this.state.startZoom);
+      const newZoomDiff = differenceFromTarget * percentage;
+      const newZoom = percentage >= 0.99
+        ? this.state.targetZoom
+        : (this.state.startZoom + newZoomDiff);
 
       this.options.zoom = newZoom;
 
-      let nominator = isZoomInOperation ? 1 : -1;
-      const scale = nominator - (this.state.targetZoom - this.options.zoom);
+      const roundedZoom = Math.round(this.options.zoom);
+      const diff = this.options.zoom - roundedZoom;
 
-      this.state.scale = Math.pow(2, scale);
+      this.state.scale = Math.pow(2, diff);
     } else {
       this.state.scale = 1;
     }
   }
 
   calculateGrid() {
-    const centerY = TileConversion.lat2tile(this.options.center[0], Math.floor(this.options.zoom), false);
-    const centerX = TileConversion.lon2tile(this.options.center[1], Math.floor(this.options.zoom), false);
+    const centerY = TileConversion.lat2tile(this.options.center[0], Math.round(this.options.zoom), false);
+    const centerX = TileConversion.lon2tile(this.options.center[1], Math.round(this.options.zoom), false);
     const gridHash = [centerY, centerX].join(',');
 
     const gridNeedsToBeUpdated = this.state.gridHash !== gridHash;
@@ -350,7 +342,7 @@ export default class Map {
         const tileY = startY + y;
 
         if (tileX >= 0 && tileY >= 0) {
-          const tile = new Tile(tileX, tileY, Math.floor(this.options.zoom));
+          const tile = new Tile(tileX, tileY, Math.round(this.options.zoom));
 
           this.ensureTileAsset(tile);
 
@@ -361,8 +353,6 @@ export default class Map {
 
     this.state.grid = grid;
     this.state.gridHash = gridHash;
-
-    this.garbageCollect();
   }
 
   ensureTileAsset(tile, expandTilesOnLoad = true) {
@@ -420,6 +410,7 @@ export default class Map {
     this.updateMoveOffset();
     this.updateZoom();
     this.calculateGrid();
+    this.garbageCollect();
 
     if (this.shouldRedraw()) {
       this.drawTiles();
@@ -430,6 +421,9 @@ export default class Map {
   }
 
   drawTiles() {
+    const canvasWidth = this.state.canvasDimensions[0];
+    const canvasHeight = this.state.canvasDimensions[1];
+
     const tileSize = this.options.tileSize * this.state.scale;
 
     const centerOffset = [
@@ -438,13 +432,13 @@ export default class Map {
     ];
 
     this.context.fillStyle = '#EEE';
-    this.context.fillRect(0, 0, this.state.canvasDimensions[0], this.state.canvasDimensions[1]);
+    this.context.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    const horizontalTiles = this.getTilesCount(this.state.canvasDimensions[0]);
-    const verticalTiles = this.getTilesCount(this.state.canvasDimensions[1]);
+    const horizontalTiles = this.getTilesCount(canvasWidth);
+    const verticalTiles = this.getTilesCount(canvasHeight);
 
-    const horizontalOverflow = (horizontalTiles * tileSize) - this.state.canvasDimensions[0];
-    const verticalOverflow = (verticalTiles * tileSize) - this.state.canvasDimensions[1];
+    const horizontalOverflow = (horizontalTiles * tileSize) - canvasWidth;
+    const verticalOverflow = (verticalTiles * tileSize) - canvasHeight;
 
     for (let y = 0; y < verticalTiles; y++) {
       for (let x = 0; x < horizontalTiles; x++) {
@@ -478,7 +472,7 @@ export default class Map {
     if (this.options.debug) {
       this.context.fillStyle = 'rgba(200, 0, 0, 0.7)';
       this.context.beginPath();
-      this.context.arc(this.state.canvasDimensions[0] / 2, this.state.canvasDimensions[1] / 2, 5, 0, 2 * Math.PI);
+      this.context.arc(canvasWidth / 2, canvasHeight / 2, 5, 0, 2 * Math.PI);
       this.context.fill();
     }
   }
