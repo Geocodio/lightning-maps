@@ -60,6 +60,18 @@ export default class Map {
     }
   }
 
+  setCenter(coord) {
+    if (!Array.isArray(coord) || coord.length !== 2) {
+      throw new Error('Please provide a valid array with a lat/lon');
+    }
+
+    coord = coord.map(coord => parseFloat(coord));
+
+    this.state.moveAnimationStart = window.performance.now();
+    this.state.targetMoveOffset = coord;
+    this.state.targetMoveOffsetIsCoord = true;
+  }
+
   setTargetMoveOffset(x, y, animated = true) {
     if (animated) {
       this.state.moveAnimationStart = window.performance.now();

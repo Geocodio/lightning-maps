@@ -5,27 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Lightning Map</title>
     <style type="text/css">
-    html, body {
-      margin: 0;
-    }
-
     canvas {
       display: block;
       margin: 0 auto;
     }
 
-    button {
+    section {
+      display: flex;
+      justify-content: center;
+    }
+
+    input, button {
+      -webkit-font-smoothing: antialiased;
       font-family: system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue;
       color: #fff;
-      margin: 0;
-      padding: 0.5rem 1rem;
+      margin: 1rem 0.5rem;
       font-weight: 700;
       border-radius: .25rem;
-      background-color: #3490dc;
       text-transform: none;
       overflow: visible;
       font-size: 14px;
+    }
+
+    input {
+      line-height: 1.25;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #dae1e7;;
+      color: #606f7b;
+      box-shadow: 0 2px 4px 0 rgba(0,0,0,.1);
+    }
+
+    button {
+      cursor: pointer;
       line-height: 1.15;
+      padding: 0.5rem 1rem;
+      background-color: #3490dc;
     }
 
     button:hover {
@@ -36,8 +50,15 @@
   <body>
     <canvas id="map" width="800" height="600"></canvas>
 
-    <button onClick="map.setZoom(map.getZoom() + 1)">Zoom in</button>
-    <button onClick="map.setZoom(map.getZoom() - 1)">Zoom out</button>
+    <section>
+      <button onClick="map.setZoom(map.getZoom() + 1)">Zoom in</button>
+      <button onClick="map.setZoom(map.getZoom() - 1)">Zoom out</button>
+    </section>
+
+    <section>
+      <input type="text" id="coord" value="38.882666,-77.170150" />
+      <button onClick="map.setCenter(document.getElementById('coord').value.split(','))">Set center</button>
+    </section>
 
     <script src="LightningMap.js"></script>
     <script>
