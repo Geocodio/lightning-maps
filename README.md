@@ -41,7 +41,7 @@ var map = new LightningMap.Map(canvas, {
 map.addMarker(new LightningMap.Marker([38.882666, -77.170150]))
 ```
 
-### 4. Success! You know have a map
+### 4. Success! You now have a map
 
 ![Example](docs/screenshots/marker-single.png)
 
