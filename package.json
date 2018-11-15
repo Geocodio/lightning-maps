@@ -1,7 +1,7 @@
 {
   "name": "lightning-maps",
   "version": "0.0.1",
-  "description": "Produce universal library with webpack and es6",
+  "description": "Lightweight, dependency-free slippy map renderer",
   "main": "lib/LightningMaps.js",
   "scripts": {
     "build": "webpack --env dev && webpack --env build && cp lib/LightningMaps.min.js docs/LightningMaps.js && npm run test",

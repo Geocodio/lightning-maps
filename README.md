@@ -1,4 +1,4 @@
-# Lightning Maps `[WIP]`
+# Lightning Maps (*Alpha release*)
 
 A lightweight, dependency-free slippy map renderer.
 
@@ -7,18 +7,22 @@ Heavily inspired by [Pigeon Maps](https://github.com/mariusandra/pigeon-maps) an
 ## Goals
 
 * Modern, built using ES6+ syntax
-* Lightweight, [absolutely zero dependencies](https://github.com/Geocodio/lightning-maps/blob/master/package.json#L28) with a minified bundle of less than 20kb
+* Lightweight, [absolutely zero dependencies](https://github.com/Geocodio/lightning-maps/blob/master/package.json#L28) with a [minified bundle](https://raw.githubusercontent.com/Geocodio/lightning-maps/master/lib/LightningMaps.min.js) of less than 20kb
 * Ability to render thousands of markers, by using `<canvas>` rendering instead of depending on the DOM
 * Wrappers for React and VueJS (Coming soon)
 
 ## Using
 
-### 1. Include `LightningMaps.min.js`
+### 1. Install
 
-> Optional: You can also use your favorite module loader
+```
+npm install --save npm lightning-maps
+```
+
+Or link directly to our build via the [unpkg](https://unpkg.com) CDN:
 
 ```html
-<script src="LightningMaps.min.js"></script>
+<script src="https://unpkg.com/lightning-maps@0.0.1/lib/LightningMaps.min.js"></script>
 ```
 
 ### 2. Create a `<canvas>` element
@@ -54,7 +58,7 @@ npm run dev
 npm run test:watch
 ```
 
-> You can now head to [http://localhost:8081/docs/simple.html](http://localhost:8081/docs/simple.html) or [http://localhost:8081/docs/markers.html](http://localhost:8081/docs/markers.html) to test the app
+> You can now head to [http://localhost:8080/simple.html](http://localhost:8080/simple.html) or [http://localhost:8080/markers.html](http://localhost:8080/markers.html) to test the app
 
 ### Build library for distribution
 
