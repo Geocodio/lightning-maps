@@ -1,4 +1,4 @@
-# Lightning Map `[WIP]`
+# Lightning Maps `[WIP]`
 
 A lightweight, dependency-free slippy map renderer.
 
@@ -7,18 +7,18 @@ Heavily inspired by [Pigeon Maps](https://github.com/mariusandra/pigeon-maps) an
 ## Goals
 
 * Modern, built using ES6+ syntax
-* Lightweight, [absolutely zero dependencies](https://github.com/Geocodio/lightning-map/blob/master/package.json#L28) with a minified bundle of less than 20kb
+* Lightweight, [absolutely zero dependencies](https://github.com/Geocodio/lightning-maps/blob/master/package.json#L28) with a minified bundle of less than 20kb
 * Ability to render thousands of markers, by using `<canvas>` rendering instead of depending on the DOM
 * Wrappers for React and VueJS (Coming soon)
 
 ## Using
 
-### 1. Include `LightningMap.min.js`
+### 1. Include `LightningMaps.min.js`
 
 > Optional: You can also use your favorite module loader
 
 ```html
-<script src="LightningMap.min.js"></script>
+<script src="LightningMaps.min.js"></script>
 ```
 
 ### 2. Create a `<canvas>` element
@@ -30,7 +30,7 @@ Heavily inspired by [Pigeon Maps](https://github.com/mariusandra/pigeon-maps) an
 ### 3. Instantiate the map and add a marker
 
 ```javascript
-var map = new LightningMap.Map(canvas, {
+var map = new LightningMaps.Map(canvas, {
   source: function (x, y, z) {
     return `https://maps.geocod.io/tiles/base/${z}/${x}/${y}.png`;
   },
@@ -38,7 +38,7 @@ var map = new LightningMap.Map(canvas, {
   center: [38.86530697026126, -77.20057854052735]
 });
 
-map.addMarker(new LightningMap.Marker([38.882666, -77.170150]))
+map.addMarker(new LightningMaps.Marker([38.882666, -77.170150]))
 ```
 
 ### 4. Success! You now have a map

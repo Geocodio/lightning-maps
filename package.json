@@ -1,17 +1,17 @@
 {
-  "name": "lightning-map",
+  "name": "lightning-maps",
   "version": "0.0.1",
   "description": "Produce universal library with webpack and es6",
-  "main": "lib/LightningMap.js",
+  "main": "lib/LightningMaps.js",
   "scripts": {
-    "build": "webpack --env dev && webpack --env build && cp lib/LightningMap.min.js docs/LightningMap.js && npm run test",
-    "dev": "rm docs/LightningMap.js && webpack-dev-server --progress --colors --watch --env dev",
+    "build": "webpack --env dev && webpack --env build && cp lib/LightningMaps.min.js docs/LightningMaps.js && npm run test",
+    "dev": "rm docs/LightningMaps.js && webpack-dev-server --progress --colors --watch --env dev",
     "test": "mocha --require babel-register --colors ./test/*.spec.js",
     "test:watch": "mocha --require babel-register --colors -w ./test/*.spec.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/geocodio/lightning-map.git"
+    "url": "https://github.com/geocodio/lightning-maps.git"
   },
   "keywords": [
     "slippy-map",
@@ -23,9 +23,9 @@
   "author": "Mathias Hansen",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/geocodio/lightning-map/issues"
+    "url": "https://github.com/geocodio/lightning-maps/issues"
   },
-  "homepage": "https://github.com/geocodio/lightning-map",
+  "homepage": "https://github.com/geocodio/lightning-maps",
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.51",
     "@babel/core": "^7.0.0-beta.51",
