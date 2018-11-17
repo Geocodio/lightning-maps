@@ -68,7 +68,8 @@ class Map extends Component {
 Map.propTypes = {
   source: PropTypes.func.isRequired,
   zoom: PropTypes.number.isRequired,
-  center: PropTypes.arrayOf(PropTypes.number.isRequired).isRequired
+  center: PropTypes.arrayOf(PropTypes.number.isRequired).isRequired,
+  children: PropTypes.oneOfType([PropTypes.object, PropTypes.array])
 }
 
 export default Map

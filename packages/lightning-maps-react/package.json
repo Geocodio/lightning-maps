@@ -1,6 +1,6 @@
 {
   "name": "lightning-maps-react",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Lightweight slippy map renderer for react",
   "main": "lib/index.js",
   "repository": {
@@ -16,9 +16,8 @@
     "test": "npm run jest && npm run eslint",
     "jest": "jest",
     "eslint": "eslint src/**/*.js",
-    "lib": "npm run clean && babel src -d lib",
+    "build": "npm run clean && babel src -d lib",
     "clean": "rm -rf lib && mkdir lib",
-    "prepublish": "npm run lib",
     "storybook": "start-storybook -p 6006"
   },
   "homepage": "https://github.com/geocodio/lightning-maps-react",
