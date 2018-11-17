@@ -1,0 +1,14 @@
+{
+  "name": "lightning-maps-example-basic",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "react": "^16.6.0",
+    "lightning-maps-react": "latest",
+    "react-dom": "^16.6.0",
+    "react-scripts": "1.0.12"
+  },
+  "scripts": {
+    "start": "react-scripts start"
+  }
+}
