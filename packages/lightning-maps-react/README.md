@@ -5,7 +5,7 @@
 [![License][license-image]][license-url]
 [![Downloads][downloads-image]][downloads-url]
 
-React wrapper for [lightning-maps](https://github.com/geocodio/lightning-maps). - A lightweight, dependency-free slippy map renderer.
+React wrapper for [lightning-maps-react](https://github.com/geocodio/lightning-maps-react). - A lightweight, dependency-free slippy map renderer.
 
 Heavily inspired by [Pigeon Maps](https://github.com/mariusandra/pigeon-maps) and [Leaflet](https://leafletjs.com), but with slightly different goals in mind:
 
@@ -16,14 +16,14 @@ Heavily inspired by [Pigeon Maps](https://github.com/mariusandra/pigeon-maps) an
 ## Installation & Usage
 
 ```bash
-npm install --save lightning-maps
+npm install --save lightning-maps-react
 ```
 
 ### Include the Component
 
 ```javascript
 import React from 'react'
-import { Map, Marker } from 'lightning-maps'
+import { Map, Marker } from 'lightning-maps-react'
 
 class Component extends React.Component {
 
@@ -37,11 +37,11 @@ class Component extends React.Component {
 }
 ```
 
-[travis-svg]: https://travis-ci.org/geocodio/lightning-maps.svg
-[travis-url]: https://travis-ci.org/geocodio/lightning-maps
-[license-image]: http://img.shields.io/npm/l/lightning-maps.svg
+[travis-svg]: https://travis-ci.org/geocodio/lightning-maps-react.svg
+[travis-url]: https://travis-ci.org/geocodio/lightning-maps-react
+[license-image]: http://img.shields.io/npm/l/lightning-maps-react.svg
 [license-url]: LICENSE
-[downloads-image]: http://img.shields.io/npm/dm/lightning-maps.svg
-[downloads-url]: http://npm-stat.com/charts.html?package=lightning-maps
-[npm-version-image]: https://img.shields.io/npm/v/lightning-maps.svg
-[npm-version-url]: https://www.npmjs.com/package/lightning-maps
+[downloads-image]: http://img.shields.io/npm/dm/lightning-maps-react.svg
+[downloads-url]: http://npm-stat.com/charts.html?package=lightning-maps-react
+[npm-version-image]: https://img.shields.io/npm/v/lightning-maps-react.svg
+[npm-version-url]: https://www.npmjs.com/package/lightning-maps-react
