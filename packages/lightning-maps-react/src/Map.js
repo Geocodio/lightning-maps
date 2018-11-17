@@ -25,7 +25,7 @@ class Map extends Component {
     this.renderChildren();
 
     return (
-      <canvas ref={this.canvasRef} {...this.getFilteredProps()} />
+      <canvas ref={this.canvasRef} {...this.getCanvasProps()} />
     );
   }
 
@@ -52,11 +52,21 @@ class Map extends Component {
       });
   }
 
-  getFilteredProps() {
+  getMapOptions() {
+    const validOptions = ['source', 'zoom', 'center'];
+
+    return this.getFilteredProps(key => validOptions.includes(key));
+  }
+
+  getCanvasProps() {
     const usedProps = Object.keys(Map.propTypes);
 
+    return this.getFilteredProps(key => !usedProps.includes(key));
+  }
+
+  getFilteredProps(filter) {
     return Object.keys(this.props)
-      .filter(key => !usedProps.includes(key))
+      .filter(filter)
       .reduce((obj, key) => {
         obj[key] = this.props[key];
         return obj;
