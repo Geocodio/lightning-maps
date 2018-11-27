@@ -5,6 +5,7 @@ export const defaultMapOptions = {
   source: (x, y, z) => `https://maps.geocod.io/tiles/base/${z}/${x}/${y}.png`,
   zoom: 12,
   center: [38.841779, -77.088312],
+  attribution: '© OpenStreetMap contributors',
 
   /**
    * Width and height in pixels for each tile, you most likely do not want to change this.

@@ -366,6 +366,7 @@ export default class Map {
       }
 
       this.drawMarkers();
+      this.drawAttribution();
     }
 
     window.requestAnimationFrame(this.draw);
@@ -420,8 +421,47 @@ export default class Map {
     });
   }
 
+  drawAttribution() {
+    const margin = 4;
+
+    this.context.font = 'bold 12px sans-serif';
+    const textBounds = this.context.measureText(this.options.attribution);
+
+    const x = this.state.canvasDimensions[0] - textBounds.width - margin;
+    const y = this.state.canvasDimensions[1] - 2 - margin;
+
+    this.context.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    this.roundedRectangle(x - margin, y - 15, textBounds.width + 80, 80);
+
+    this.context.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    this.context.fillText(this.options.attribution, x, y);
+
+  }
+
+  roundedRectangle(x, y, width, height) {
+    const radius = 5;
+
+    this.context.beginPath();
+    this.context.moveTo(x + radius, y);
+    this.context.lineTo(x + width - radius, y);
+    this.context.quadraticCurveTo(x + width, y, x + width, y + radius);
+    this.context.lineTo(x + width, y + height - radius);
+    this.context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    this.context.lineTo(x + radius, y + height);
+    this.context.quadraticCurveTo(x, y + height, x, y + height - radius);
+    this.context.lineTo(x, y + radius);
+    this.context.quadraticCurveTo(x, y, x + radius, y);
+    this.context.closePath();
+
+    this.context.fill();
+  }
+
   addMarker(marker) {
     this.state.markers.push(marker);
+  }
+
+  addMarkers(markers) {
+    markers.map(marker => this.addMarker(marker));
   }
 
 }
