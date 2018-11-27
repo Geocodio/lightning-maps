@@ -1,6 +1,6 @@
 {
   "name": "lightning-maps",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "description": "Lightweight, dependency-free slippy map renderer",
   "main": "lib/LightningMaps.js",
   "scripts": {
