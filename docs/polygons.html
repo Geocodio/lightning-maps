@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Lightning Maps</title>
+    <style type="text/css">
+    html, body {
+      margin: 0;
+    }
+    </style>
+  </head>
+  <body>
+    <canvas id="map" width="800" height="600"></canvas>
+    <script src="LightningMaps.js"></script>
+    <script>
+    var canvas = document.getElementById('map');
+    canvas.width = document.documentElement.clientWidth;
+    canvas.height = document.documentElement.clientHeight;
+
+    var map = new LightningMaps.Map(canvas, {
+      source: function (x, y, z) {
+        return `https://maps.geocod.io/tiles/base/${z}/${x}/${y}.png`;
+      },
+      zoom: 12,
+      center: [38.86530697026126, -77.20057854052735]
+    });
+
+    map.addPolygon(new LightningMaps.Polygon('https://unpkg.com/us-atlas@1/us/10m.json'));
+    </script>
+  </body>
+</html>
