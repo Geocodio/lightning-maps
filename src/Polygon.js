@@ -1,7 +1,7 @@
 import { defaultPolygonOptions } from './defaultOptions';
 import TileConversion from './TileConversion';
 import { geoPath, geoTransform } from 'd3-geo';
-import * as topojson from 'topojson-client';
+import { mesh } from 'topojson-client';
 
 const POLYGON_CACHE = {};
 
@@ -43,10 +43,11 @@ export default class Polygon {
     ];
 
     const transform = geoTransform({point: this.projectPoint, mapState, center });
+
     const path = geoPath(transform).context(context);
 
     context.beginPath();
-    path(topojson.mesh(this._geometry));
+    path(mesh(this._geometry));
     context.stroke();
   }
 
@@ -76,9 +77,9 @@ export default class Polygon {
 
     const position = cachedPosition(x, y, this.mapState);
 
-    this.stream.point(
-      this.center[0] - position[0] + this.mapState.moveOffset[0],
-      this.center[1] - position[1] + this.mapState.moveOffset[1]
-    );
+    const projectedX = this.center[0] - position[0] + this.mapState.moveOffset[0];
+    const projectedY = this.center[1] - position[1] + this.mapState.moveOffset[1];
+
+    this.stream.point(projectedX, projectedY);
   }
 }
