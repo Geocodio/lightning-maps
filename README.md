@@ -1,13 +1,13 @@
 # Lightning Maps (*Alpha release*)
 
-A lightweight, dependency-free slippy map renderer.
+A lightweight, minimal-dependecy slippy map renderer.
 
 Heavily inspired by [Pigeon Maps](https://github.com/mariusandra/pigeon-maps) and [Leaflet](https://leafletjs.com), but with slightly different goals in mind:
 
 ## Goals
 
 * Modern, built using ES6+ syntax
-* Lightweight, [absolutely zero dependencies](https://github.com/Geocodio/lightning-maps/blob/master/package.json#L28) with a [minified bundle](https://raw.githubusercontent.com/Geocodio/lightning-maps/master/lib/LightningMaps.min.js) of less than 20kb
+* Lightweight, [minimal dependencies](https://github.com/Geocodio/lightning-maps/blob/master/package.json#L28) with a [minified bundle](https://raw.githubusercontent.com/Geocodio/lightning-maps/master/lib/LightningMaps.min.js) of less than 20kb
 * Ability to render thousands of markers, by using `<canvas>` rendering instead of depending on the DOM
 * Wrappers for React and VueJS (Coming soon)
 

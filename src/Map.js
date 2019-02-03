@@ -1,5 +1,6 @@
 import TileConversion from './TileConversion';
 import TileLayer from './TileLayer';
+import MapState from './MapState';
 import { defaultMapOptions } from './defaultOptions';
 
 export default class Map {
@@ -41,6 +42,7 @@ export default class Map {
       lastMouseMoveEvent: null,
       mouseVelocities: [],
       markers: [],
+      polygons: [],
       tileLayers: [
         new TileLayer(this)
       ]
@@ -366,6 +368,7 @@ export default class Map {
       }
 
       this.drawMarkers();
+      this.drawPolygons();
       this.drawAttribution();
     }
 
@@ -421,6 +424,20 @@ export default class Map {
     });
   }
 
+  drawPolygons() {
+    const mapState = new MapState(
+      this.options.center,
+      this.options.zoom,
+      this.options.tileSize,
+      this.state.canvasDimensions,
+      this.state.moveOffset
+    );
+
+    this.state.polygons.map(polygon => {
+      polygon.render(this.context, mapState);
+    });
+  }
+
   drawAttribution() {
     const margin = 4;
 
@@ -462,6 +479,10 @@ export default class Map {
 
   addMarkers(markers) {
     markers.map(marker => this.addMarker(marker));
+  }
+
+  addPolygon(polygon) {
+    this.state.polygons.push(polygon);
   }
 
 }

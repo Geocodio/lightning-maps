@@ -5,7 +5,7 @@
   "main": "lib/LightningMaps.js",
   "scripts": {
     "build": "webpack --env dev && webpack --env build && cp lib/LightningMaps.min.js docs/LightningMaps.js && npm run test",
-    "dev": "rm docs/LightningMaps.js && webpack-dev-server --progress --colors --watch --env dev",
+    "dev": "rm -f docs/LightningMaps.js && webpack-dev-server --progress --colors --watch --env dev",
     "test": "mocha --require babel-register --colors ./test/*.spec.js",
     "test:watch": "mocha --require babel-register --colors -w ./test/*.spec.js"
   },
@@ -41,10 +41,13 @@
     "jsdom": "11.11.0",
     "jsdom-global": "3.0.2",
     "mocha": "^4.0.1",
-    "uglifyjs-webpack-plugin": "^1.2.7",
     "webpack": "^4.12.2",
     "webpack-cli": "^3.0.8",
     "webpack-dev-server": "^3.1.11",
     "yargs": "^10.0.3"
+  },
+  "dependencies": {
+    "d3-geo": "^1.11.3",
+    "topojson-client": "^3.0.0"
   }
 }
