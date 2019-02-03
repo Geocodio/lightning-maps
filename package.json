@@ -46,5 +46,9 @@
     "webpack-cli": "^3.0.8",
     "webpack-dev-server": "^3.1.11",
     "yargs": "^10.0.3"
+  },
+  "dependencies": {
+    "d3-geo": "^1.11.3",
+    "topojson-client": "^3.0.0"
   }
 }

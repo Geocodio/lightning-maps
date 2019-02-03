@@ -22,11 +22,11 @@
       source: function (x, y, z) {
         return `https://maps.geocod.io/tiles/base/${z}/${x}/${y}.png`;
       },
-      zoom: 12,
+      zoom: 5,
       center: [38.86530697026126, -77.20057854052735]
     });
 
-    map.addPolygon(new LightningMaps.Polygon('https://unpkg.com/us-atlas@1/us/10m.json'));
+    map.addPolygon(new LightningMaps.Polygon('cb_2017_us_county_5m.json'));
     </script>
   </body>
 </html>
