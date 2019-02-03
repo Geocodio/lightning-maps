@@ -1,12 +1,10 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react' // eslint-disable-line no-unused-vars
 import PropTypes from 'prop-types'
 
 class Marker extends Component {
-
-  render() {
-    return null;
+  render () {
+    return null
   }
-
 }
 
 Marker.defaultProps = {

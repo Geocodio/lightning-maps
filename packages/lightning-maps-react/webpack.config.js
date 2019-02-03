@@ -1,8 +1,7 @@
-var path = require('path')
-var pkg = require('./package.json')
-var ExtractTextPlugin = require('extract-text-webpack-plugin')
+const path = require('path')
+const pkg = require('./package.json')
 
-var libraryName = pkg.name
+const libraryName = pkg.name
 
 module.exports = {
   entry: './src/index.js',
@@ -21,24 +20,9 @@ module.exports = {
         use: ['babel-loader'],
         include: path.resolve(__dirname, 'src'),
         exclude: /node_modules/
-      },
-      {
-        test: /\.s?css$/,
-        use: ExtractTextPlugin.extract({
-          fallback: 'style-loader',
-          use: [
-            'css-loader',
-            'sass-loader'
-          ]
-        })
       }
     ]
   },
-  plugins: [
-    new ExtractTextPlugin({
-      filename: 'build.css'
-    })
-  ],
   externals: {
     react: {
       commonjs: 'react',

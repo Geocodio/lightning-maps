@@ -5,86 +5,84 @@ import Polygon from './Polygon'
 import * as LightningMap from 'lightning-maps'
 
 class Map extends Component {
+  constructor (props) {
+    super(props)
 
-  constructor(props) {
-    super(props);
-
-    this.lightningMap = null;
-    this.canvasRef = React.createRef();
+    this.lightningMap = null
+    this.canvasRef = React.createRef()
   }
 
-  componentDidMount() {
-    this.lightningMap = new LightningMap.Map(this.canvasRef.current, this.getMapOptions());
-    this.renderChildren();
+  componentDidMount () {
+    this.lightningMap = new LightningMap.Map(this.canvasRef.current, this.getMapOptions())
+    this.renderChildren()
   }
 
-  componentDidUpdate(prevProps, prevState, snapshot) {
+  componentDidUpdate (prevProps, prevState, snapshot) {
     // console.log(prevProps);
   }
 
-  render() {
-    this.renderChildren();
+  render () {
+    this.renderChildren()
 
     return (
       <canvas ref={this.canvasRef} {...this.getCanvasProps()} />
-    );
+    )
   }
 
   renderChildren = () => {
     let children = Array.isArray(this.props.children)
       ? this.props.children
-      : [this.props.children];
+      : [this.props.children]
 
-    const lightningMap = this.lightningMap;
+    const lightningMap = this.lightningMap
 
     if (!lightningMap) {
-      return;
+      return
     }
 
     // TODO: Don't add markers that were already added
 
     children
       .filter(Component => {
-        return Component && Component.type === Marker;
+        return Component && Component.type === Marker
       })
       .map(Component => {
-        const marker = new LightningMap.Marker(Component.props.position, Component.props);
+        const marker = new LightningMap.Marker(Component.props.position, Component.props)
 
-        lightningMap.addMarker(marker);
-      });
+        lightningMap.addMarker(marker)
+      })
 
     children
       .filter(Component => {
-        return Component && Component.type === Polygon;
+        return Component && Component.type === Polygon
       })
       .map(Component => {
-        const polygon = new LightningMap.Polygon(Component.props.sourceUrl, Component.props);
+        const polygon = new LightningMap.Polygon(Component.props.sourceUrl, Component.props)
 
-        lightningMap.addPolygon(polygon);
-      });
+        lightningMap.addPolygon(polygon)
+      })
   }
 
-  getMapOptions() {
-    const validOptions = ['source', 'zoom', 'center'];
+  getMapOptions () {
+    const validOptions = ['source', 'zoom', 'center']
 
-    return this.getFilteredProps(key => validOptions.includes(key));
+    return this.getFilteredProps(key => validOptions.includes(key))
   }
 
-  getCanvasProps() {
-    const usedProps = Object.keys(Map.propTypes);
+  getCanvasProps () {
+    const usedProps = Object.keys(Map.propTypes)
 
-    return this.getFilteredProps(key => !usedProps.includes(key));
+    return this.getFilteredProps(key => !usedProps.includes(key))
   }
 
-  getFilteredProps(filter) {
+  getFilteredProps (filter) {
     return Object.keys(this.props)
       .filter(filter)
       .reduce((obj, key) => {
-        obj[key] = this.props[key];
-        return obj;
-      }, {});
+        obj[key] = this.props[key]
+        return obj
+      }, {})
   }
-
 }
 
 Map.propTypes = {
