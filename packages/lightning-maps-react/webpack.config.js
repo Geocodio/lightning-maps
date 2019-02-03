@@ -1,43 +1,56 @@
-const path = require('path')
-const webpack = require('webpack')
+var path = require('path')
+var pkg = require('./package.json')
+var ExtractTextPlugin = require('extract-text-webpack-plugin')
+
+var libraryName = pkg.name
 
 module.exports = {
-  entry: ['./docs/index.js'],
+  entry: './src/index.js',
   output: {
-    path: path.join(__dirname, 'docs/build'),
-    filename: 'bundle.js',
-    publicPath: 'docs/build/',
+    path: path.join(__dirname, './dist'),
+    filename: 'build.js',
+    library: libraryName,
+    libraryTarget: 'umd',
+    publicPath: '/dist/',
+    umdNamedDefine: true
   },
   module: {
-    loaders: [
+    rules: [
       {
-        test: /\.js$/,
-        include: /react-context/,
-        loaders: ['babel-loader'],
+        test: /\.(js|jsx)$/,
+        use: ['babel-loader'],
+        include: path.resolve(__dirname, 'src'),
+        exclude: /node_modules/
       },
       {
-        test: /\.js$/,
-        exclude: [/node_modules/, /modules/],
-        loaders: ['babel-loader'],
-      }, {
-        test: /\.jsx$/,
-        exclude: [/node_modules/, /modules/],
-        loaders: ['jsx-loader', 'babel-loader'],
-      }, {
-        test: /\.css$/,
-        loaders: ['style-loader', 'css-loader'],
-      }, {
-        test: /\.md$/,
-        loaders: ['html-loader'],
-      },
-    ],
-  },
-  resolve: {
-    extensions: ['', '.js', '.jsx'],
+        test: /\.s?css$/,
+        use: ExtractTextPlugin.extract({
+          fallback: 'style-loader',
+          use: [
+            'css-loader',
+            'sass-loader'
+          ]
+        })
+      }
+    ]
   },
   plugins: [
-    new webpack.HotModuleReplacementPlugin({ quiet: true }),
-    new webpack.NoErrorsPlugin(),
+    new ExtractTextPlugin({
+      filename: 'build.css'
+    })
   ],
-  quiet: true,
+  externals: {
+    react: {
+      commonjs: 'react',
+      commonjs2: 'react',
+      amd: 'React',
+      root: 'React'
+    },
+    'react-dom': {
+      commonjs: 'react-dom',
+      commonjs2: 'react-dom',
+      amd: 'ReactDOM',
+      root: 'ReactDOM'
+    }
+  }
 }

@@ -1,84 +1,67 @@
 {
   "name": "lightning-maps-react",
-  "version": "0.0.3",
-  "description": "Lightweight slippy map renderer for react",
-  "main": "lib/index.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/geocodio/lightning-maps-react.git"
-  },
-  "author": "Mathias Hansen",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/geocodio/lightning-maps-react/issues"
-  },
+  "version": "0.0.6",
+  "main": "dist/build.js",
   "scripts": {
-    "test": "npm run jest && npm run eslint",
-    "jest": "jest",
-    "eslint": "eslint src/**/*.js",
-    "build": "npm run clean && babel src -d lib",
-    "clean": "rm -rf lib && mkdir lib",
-    "storybook": "start-storybook -p 6006"
+    "build": "npm run clean && webpack",
+    "clean": "rimraf dist",
+    "clean:examples": "rimraf examples/dist",
+    "examples": "npm run clean:examples && webpack-dev-server --config examples/webpack.config.js --mode development",
+    "test": "npm run standard",
+    "standard": "standard \"**/*.js\"",
+    "bump": "npx standard-version"
   },
-  "homepage": "https://github.com/geocodio/lightning-maps-react",
-  "keywords": [
-    "slippy-map",
-    "maps",
-    "mapping",
-    "osm",
-    "openstreetmap"
-  ],
   "dependencies": {
-    "lightning-maps": "0.0.1"
+    "@emotion/styled": "^10.0.6",
+    "emotion": "^10.0.6",
+    "lightning-maps": "0.0.6",
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0"
   },
   "devDependencies": {
-    "@case/eslint-config": "^0.3.1",
-    "@storybook/addon-options": "^3.2.4",
-    "@storybook/react": "^3.2.4",
-    "babel-cli": "^6.8.0",
-    "babel-core": "^6.10.4",
-    "babel-jest": "^16.0.0",
-    "babel-loader": "^6.2.1",
-    "babel-preset-es2015": "^6.3.13",
-    "babel-preset-react": "^6.3.13",
-    "babel-preset-stage-0": "^6.3.13",
-    "babel-register": "^6.5.2",
-    "chai": "^3.3.0",
-    "chai-spies": "^0.7.1",
-    "css-loader": "^0.24.0",
-    "enzyme": "2.8.2",
-    "event-stream": "^3.3.1",
-    "highlight.js": "^9.3.0",
-    "html-loader": "^0.3.0",
-    "html-webpack-plugin": "^3.2.0",
-    "i": "^0.3.5",
-    "jest": "^16.0.2",
-    "jest-cli": "^20.0.4",
-    "jsx-loader": "^0.13.2",
-    "mocha": "^2.4.5",
-    "normalize.css": "^4.1.1",
-    "npm": "^5.3.0",
-    "object-assign": "^4.1.0",
-    "react": "^16.6.0",
-    "react-addons-test-utils": "^0.14.0 || ^16.0.0",
-    "react-context": "0.0.3",
-    "react-dom": "^0.14.0 || ^16.0.0",
-    "react-hot-loader": "^1.2.8",
-    "react-mark": "0.0.4",
-    "react-test-renderer": "^16.6.0",
-    "remarkable": "^1.6.0",
-    "require-dir": "^0.3.0",
-    "rimraf": "^2.5.0",
-    "style-loader": "^0.13.0",
-    "testdom": "^2.0.0",
-    "webpack": "^1.11.0",
-    "webpack-dev-server": "^1.10.1"
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@babel/plugin-proposal-class-properties": "^7.2.3",
+    "@babel/plugin-proposal-object-rest-spread": "^7.2.0",
+    "@babel/preset-env": "^7.2.3",
+    "@commitlint/cli": "^7.3.2",
+    "@commitlint/config-conventional": "^7.3.1",
+    "babel-eslint": "^10.0.1",
+    "babel-loader": "^8.0.5",
+    "babel-plugin-import": "^1.11.0",
+    "babel-preset-react": "^6.24.1",
+    "css-loader": "^2.1.0",
+    "eslint-config-standard-react": "^7.0.2",
+    "extract-text-webpack-plugin": "^4.0.0-beta.0",
+    "html-loader": "^0.5.5",
+    "html-webpack-plugin": "^4.0.0-beta.4",
+    "husky": "^1.3.1",
+    "node-sass": "^4.11.0",
+    "rimraf": "^2.6.3",
+    "sass-loader": "^7.1.0",
+    "standard": "^12.0.1",
+    "standard-version": "^4.4.0",
+    "style-loader": "^0.23.1",
+    "webpack": "^4.29.0",
+    "webpack-cli": "^3.2.1",
+    "webpack-dev-server": "^3.1.14"
   },
-  "files": [
-    "lib"
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
   ],
-  "jest": {
-    "rootDir": "src",
-    "testRegex": "spec.js$"
+  "standard": {
+    "parser": "babel-eslint",
+    "ignore": [
+      "/dist"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-commit": "npm test"
+    }
   }
 }

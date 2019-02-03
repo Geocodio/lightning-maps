@@ -13,7 +13,7 @@ class Map extends Component {
   }
 
   componentDidMount() {
-    this.lightningMap = new LightningMap.Map(this.canvasRef.current, this.props);
+    this.lightningMap = new LightningMap.Map(this.canvasRef.current, this.getMapOptions());
     this.renderChildren();
   }
 
@@ -48,6 +48,7 @@ class Map extends Component {
       })
       .map(Component => {
         const marker = new LightningMap.Marker(Component.props.position, Component.props);
+
         lightningMap.addMarker(marker);
       });
   }
