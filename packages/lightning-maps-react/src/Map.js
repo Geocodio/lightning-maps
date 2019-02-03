@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import Marker from './Marker'
+import Polygon from './Polygon'
 import * as LightningMap from 'lightning-maps'
 
 class Map extends Component {
@@ -18,7 +19,7 @@ class Map extends Component {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    console.log(prevProps);
+    // console.log(prevProps);
   }
 
   render() {
@@ -42,7 +43,7 @@ class Map extends Component {
 
     // TODO: Don't add markers that were already added
 
-    children = children
+    children
       .filter(Component => {
         return Component && Component.type === Marker;
       })
@@ -50,6 +51,16 @@ class Map extends Component {
         const marker = new LightningMap.Marker(Component.props.position, Component.props);
 
         lightningMap.addMarker(marker);
+      });
+
+    children
+      .filter(Component => {
+        return Component && Component.type === Polygon;
+      })
+      .map(Component => {
+        const polygon = new LightningMap.Polygon(Component.props.sourceUrl, Component.props);
+
+        lightningMap.addPolygon(polygon);
       });
   }
 

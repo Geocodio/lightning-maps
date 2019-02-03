@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import * as LightningMap from 'lightning-maps'
 
 class Marker extends Component {
 
