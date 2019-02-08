@@ -181,14 +181,20 @@ export default class TileLayer {
     const horizontalTiles = this.getTilesCount(this.map.state.canvasDimensions[0]);
     const verticalTiles = this.getTilesCount(this.map.state.canvasDimensions[1]);
 
-    const totalTiles = horizontalTiles * verticalTiles;
+    let totalTiles = 0;
     let loadedTiles = 0;
 
     for (let y = 0; y < verticalTiles; y++) {
       for (let x = 0; x < horizontalTiles; x++) {
         const tile = this.state.grid[x][y];
 
-        if (this.map.state.tiles[tile.id].loaded) {
+        if (tile) {
+          totalTiles++;
+        }
+
+        const cachedTile = tile && this.map.state.tiles[tile.id];
+
+        if (cachedTile && cachedTile.loaded) {
           loadedTiles++;
         }
       }

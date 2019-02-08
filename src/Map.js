@@ -55,6 +55,8 @@ export default class Map {
 
   setZoom(zoom) {
     if (this.zoomValueIsValid(zoom)) {
+      zoom = Math.round(zoom);
+
       this.state.tileLayers.push(new TileLayer(this, zoom));
       // this.state.tileLayers[0].tilesZoomLevel = this.options.zoom;
 
