@@ -25,7 +25,7 @@ export default class Tile {
     const max = (1 << this.zoom);
 
     if (this.x >= max || this.x < 0 || this.y >= max || this.y < 0) {
-        return false;
+      return false;
     }
 
     return true;

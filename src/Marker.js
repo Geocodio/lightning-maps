@@ -29,6 +29,10 @@ export default class Marker {
       case 'donut':
         renderFunction = this.renderDonut;
         break;
+
+      case 'image':
+        renderFunction = this.renderImage;
+        break;
     }
 
     if (!renderFunction) {
@@ -82,5 +86,14 @@ export default class Marker {
     context.bezierCurveTo(65.726563, 34.548357, 56.446958, 43.827962, 45.000000, 43.827962);
     context.fill();
     context.restore();
+  }
+
+  renderImage(context, position) {
+    if (this.options.image) {
+      const x = position[0] - this.options.image.width / 2;
+      const y = position[1] - this.options.image.height / 2;
+
+      context.drawImage(this.options.image, x, y, this.options.image.width, this.options.image.height);
+    }
   }
 }

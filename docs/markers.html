@@ -26,6 +26,13 @@
       center: [38.882666, -77.170150]
     });
 
+    var markerIcon = new Image(16, 13);
+    markerIcon.src = 'https://unpkg.com/svg-icon@0.8.2/dist/trimmed-svg/metro/camera.svg';
+
+    markerIcon.onload = function () {
+      map.addMarker(new LightningMaps.Marker([38.87, -77.16], { image: markerIcon, type: 'image' }));
+    };
+
     map.addMarker(new LightningMaps.Marker([38.882666, -77.170150]));
     map.addMarker(new LightningMaps.Marker([38.91, -77.24], { color: 'rgba(200, 0, 0, 0.7)'}));
     map.addMarker(new LightningMaps.Marker([38.88, -77.19], { color: 'rgba(0, 0, 0, 0.7)', type: 'circle' }));
