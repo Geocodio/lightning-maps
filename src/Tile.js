@@ -20,4 +20,14 @@ export default class Tile {
   get id() {
     return [this.x, this.y, this.zoom].join('|');
   }
+
+  isValid() {
+    const max = (1 << this.zoom);
+
+    if (this.x >= max || this.x < 0 || this.y >= max || this.y < 0) {
+        return false;
+    }
+
+    return true;
+  }
 }

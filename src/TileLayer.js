@@ -73,9 +73,11 @@ export default class TileLayer {
         const tileX = startX + x;
         const tileY = startY + y;
 
-        if (tileX >= 0 && tileY >= 0) {
-          grid[x][y] = new Tile(tileX, tileY, Math.round(this.tilesZoomLevel || options.zoom));
-          this.ensureTileAsset(grid[x][y]);
+        const tile = new Tile(tileX, tileY, Math.round(this.tilesZoomLevel || options.zoom));
+
+        if (tile.isValid()) {
+          this.ensureTileAsset(tile);
+          grid[x][y] = tile;
         }
       }
     }
