@@ -55,6 +55,12 @@ export const defaultMapOptions = {
   tileAreaMultiplier: 2,
 
   /**
+   * If enabled, a double click will center the map on the given location and zoom in
+   * Note: Currently disabled per default as the feature is buggy/unstable
+   */
+  doubleClickToZoom: false,
+
+  /**
    * When debug mode is enabled, additional rendering artifacts are drawn. Should only be used in
    * conjuction with development of the library
    */

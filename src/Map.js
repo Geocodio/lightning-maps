@@ -132,15 +132,17 @@ export default class Map {
     this.canvas.addEventListener('dblclick', event => {
       event.preventDefault();
 
-      const centerX = this.state.canvasDimensions[0] / 2;
-      const centerY = this.state.canvasDimensions[1] / 2;
+      if (this.options.doubleClickToZoom) {
+        const centerX = this.state.canvasDimensions[0] / 2;
+        const centerY = this.state.canvasDimensions[1] / 2;
 
-      this.setTargetMoveOffset(
-        -(event.clientX - centerX),
-        -(event.clientY - centerY)
-      );
+        this.setTargetMoveOffset(
+          -(event.clientX - centerX),
+          -(event.clientY - centerY)
+        );
 
-      this.setZoom(this.options.zoom + 1);
+        this.setZoom(this.options.zoom + 1);
+      }
     });
 
     this.canvas.addEventListener('mousedown', event => {
