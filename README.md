@@ -58,7 +58,10 @@ npm run dev
 npm run test:watch
 ```
 
-> You can now head to [http://localhost:8080/simple.html](http://localhost:8080/simple.html) or [http://localhost:8080/markers.html](http://localhost:8080/markers.html) to test the app
+### Development urls:
+* [http://localhost:8080/simple.html](http://localhost:8080/simple.html)
+* [http://localhost:8080/markers.html](http://localhost:8080/markers.html)
+* [http://localhost:8080/polygons.html](http://localhost:8080/polygons.html)
 
 ### Build library for distribution
 
