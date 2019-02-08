@@ -481,8 +481,16 @@ export default class Map {
     markers.map(marker => this.addMarker(marker));
   }
 
+  setMarkers(markers) {
+    this.state.markers = markers;
+  }
+
   addPolygon(polygon) {
     this.state.polygons.push(polygon);
+  }
+
+  setPolygons(polygons) {
+    this.state.polygons = polygons;
   }
 
 }
