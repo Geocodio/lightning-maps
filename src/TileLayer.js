@@ -183,8 +183,7 @@ export default class TileLayer {
     const horizontalTiles = this.getTilesCount(this.map.state.canvasDimensions[0]);
     const verticalTiles = this.getTilesCount(this.map.state.canvasDimensions[1]);
 
-    let totalTiles = 0;
-    let loadedTiles = 0;
+    let totalTiles = 0, loadedTiles = 0;
 
     for (let y = 0; y < verticalTiles; y++) {
       for (let x = 0; x < horizontalTiles; x++) {
