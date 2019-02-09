@@ -26,14 +26,11 @@
   },
   "homepage": "https://github.com/geocodio/lightning-maps",
   "devDependencies": {
-    "@babel/cli": "^7.0.0-beta.51",
-    "@babel/core": "^7.0.0-beta.51",
-    "@babel/preset-env": "^7.0.0-beta.51",
-    "babel-eslint": "^8.0.3",
-    "babel-loader": "^8.0.0-beta.4",
-    "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-preset-env": "^7.0.0-beta.3",
-    "babel-register": "^7.0.0-beta.3",
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.3.1",
+    "babel-eslint": "^10.0.1",
+    "babel-loader": "^8.0.5",
     "chai": "^4.1.2",
     "eslint": "^5.0.1",
     "eslint-loader": "^2.0.0",
@@ -49,5 +46,11 @@
     "d3-geo": "^1.11.3",
     "topojson-client": "^3.0.0"
   },
-  "version": "0.0.6"
+  "version": "0.0.6",
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }
