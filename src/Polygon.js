@@ -62,7 +62,7 @@ export default class Polygon {
 
         if (coordinatesInsideViewPort.length > 0) {
           list.map((position, index) => {
-            const coordinate = this.offsetCoordinate(position, center, mapState.moveOffset);
+            const coordinate = this.offsetCoordinate(position, center, mapState.moveOffset, mapState.canvasDimensions);
 
             if (index === 0) {
               context.moveTo(coordinate[0], coordinate[1]);
@@ -78,11 +78,25 @@ export default class Polygon {
     context.stroke();
   }
 
-  offsetCoordinate(position, center, moveOffset) {
-    return [
-      center[0] - position[0] + moveOffset[0],
-      center[1] - position[1] + moveOffset[1]
-    ];
+  offsetCoordinate(position, center, moveOffset, canvasDimensions = null) {
+    let x = center[0] - position[0] + moveOffset[0],
+      y = center[1] - position[1] + moveOffset[1];
+
+    if (canvasDimensions) {
+      if (x < 0) {
+        x = 0;
+      } else if (x > canvasDimensions[0]) {
+        x = canvasDimensions[0];
+      }
+
+      if (y < 0) {
+        y = 0;
+      } else if (y > canvasDimensions[1]) {
+        y = canvasDimensions[1];
+      }
+    }
+
+    return [x, y];
   }
 
   projectGeometry(geometry, mapState) {
