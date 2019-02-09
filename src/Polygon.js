@@ -40,10 +40,9 @@ export default class Polygon {
           ...feature,
           geometry: this.projectGeometry(feature.geometry)
         };
-      })
+      });
     }
 
-    /*
     if (!this.path) {
       this.mapState = mapState;
 
@@ -61,7 +60,6 @@ export default class Polygon {
     this.path(this._geometry);
     context.fill();
     context.stroke();
-    */
   }
 
   projectGeometry(geometry) {
@@ -80,6 +78,6 @@ export default class Polygon {
     const projectedX = center[0] - position[0] + mapState.moveOffset[0];
     const projectedY = center[1] - position[1] + mapState.moveOffset[1];
 
-    return [projectedY, projectedY];
+    return [projectedY, projectedX];
   }
 }
