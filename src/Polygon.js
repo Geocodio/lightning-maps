@@ -1,15 +1,12 @@
 import { defaultPolygonOptions } from './defaultOptions';
 import TileConversion from './TileConversion';
-import { feature, mesh } from 'topojson-client';
+import { feature } from 'topojson-client';
 
 export default class Polygon {
   constructor(json, objectName, options = {}) {
     this._options = Object.assign({}, defaultPolygonOptions, options);
 
-    window._geometry = {
-      mesh: mesh(json, json.objects[objectName]),
-      feature: feature(json, json.objects[objectName])
-    };
+    window._geometry = feature(json, json.objects[objectName]);
   }
 
   get options() {
@@ -29,8 +26,6 @@ export default class Polygon {
       return;
     }
 
-    const renderAsMesh = (mapState.zoom <= this.options.zoomRenderingThreshold);
-
     context.fillStyle = this.options.color;
     context.strokeStyle = this.options.color;
 
@@ -40,16 +35,12 @@ export default class Polygon {
     }
 
     if (!this.getProjectedGeometry()) {
-      if (renderAsMesh) {
-        window._projectedGeometry = this.projectGeometry(this.getGeometry().mesh, mapState);
-      } else {
-        window._projectedGeometry = this.getGeometry().feature.features.map(feature => {
-          return {
-            ...feature,
-            geometry: this.projectGeometry(feature.geometry, mapState)
-          };
-        });
-      }
+      window._projectedGeometry = this.getGeometry().features.map(feature => {
+        return {
+          ...feature,
+          geometry: this.projectGeometry(feature.geometry, mapState)
+        };
+      });
 
       window._projectedGeometryState = this.buildState(mapState);
     }
@@ -60,48 +51,30 @@ export default class Polygon {
     ];
 
     context.beginPath();
-
-    if (renderAsMesh) {
-      this.getProjectedGeometry().map(list => {
-        list.map((position, index) => {
+    this.getProjectedGeometry().map(item => {
+      item.geometry.map(list => {
+        const coordinatesInsideViewPort = list.filter(position => {
           const coordinate = this.offsetCoordinate(position, center, mapState.moveOffset);
 
-          if (index === 0) {
-            context.moveTo(coordinate[0], coordinate[1]);
-          } else {
-            context.lineTo(coordinate[0], coordinate[1]);
-          }
+          return (coordinate[0] > 0 && coordinate[1] > 0
+            && coordinate[0] <= mapState.canvasDimensions[0] && coordinate[1] <= mapState.canvasDimensions[1]);
         });
-      });
-    } else {
-      this.getProjectedGeometry().map(item => {
-        item.geometry.map(list => {
-          const coordinatesInsideViewPort = list.filter(position => {
+
+        if (coordinatesInsideViewPort.length > 0) {
+          list.map((position, index) => {
             const coordinate = this.offsetCoordinate(position, center, mapState.moveOffset);
 
-            return (coordinate[0] > 0 && coordinate[1] > 0
-              && coordinate[0] <= mapState.canvasDimensions[0] && coordinate[1] <= mapState.canvasDimensions[1]);
+            if (index === 0) {
+              context.moveTo(coordinate[0], coordinate[1]);
+            } else {
+              context.lineTo(coordinate[0], coordinate[1]);
+            }
           });
-
-          if (coordinatesInsideViewPort.length > 0) {
-            list.map((position, index) => {
-              const coordinate = this.offsetCoordinate(position, center, mapState.moveOffset);
-
-              if (index === 0) {
-                context.moveTo(coordinate[0], coordinate[1]);
-              } else {
-                context.lineTo(coordinate[0], coordinate[1]);
-              }
-            });
-          }
-        });
+        }
       });
-    }
+    });
 
-    if (!renderAsMesh) {
-      context.fill();
-    }
-
+    context.fill();
     context.stroke();
   }
 
@@ -121,15 +94,9 @@ export default class Polygon {
         return geometry.coordinates.map(coordinates =>
           coordinates[0].map(item => this.projectPoint(mapState, item[0], item[1]))
         );
-
-      case 'MultiLineString':
-        return geometry.coordinates.map(coordinates =>
-          coordinates.map(item => this.projectPoint(mapState, item[0], item[1]))
-        );
-
-      default:
-        throw new Error(`Geometry type ${geometry.type} is not supported`);
     }
+
+    return [];
   }
 
   projectPoint(mapState, x, y) {

@@ -85,7 +85,5 @@ export const defaultPolygonOptions = {
    * What color should the polygon be?
    * Supports hex, rgb and rgba values
    */
-  color: 'rgba(0, 0, 200, 0.7)',
-
-  zoomRenderingThreshold: 10
+  color: 'rgba(0, 0, 200, 0.7)'
 };
