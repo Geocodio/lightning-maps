@@ -56,12 +56,16 @@ export default class TileConversion {
     ];
   }
 
-  static latLonToPixel(coord, center, zoom, tileSize, mapDimensions) {
+  static latLonToPixel(coord, center, zoom, tileSize) {
     const tileX = TileConversion.lon2tile(coord[1], zoom, false);
     const tileY = TileConversion.lat2tile(coord[0], zoom, false);
 
-    const tileCenterX = TileConversion.lon2tile(center[1], zoom, false);
-    const tileCenterY = TileConversion.lat2tile(center[0], zoom, false);
+    let tileCenterX = 0, tileCenterY = 0;
+
+    if (center) {
+      tileCenterX = TileConversion.lon2tile(center[1], zoom, false);
+      tileCenterY = TileConversion.lat2tile(center[0], zoom, false);
+    }
 
     return [
       -(tileX - tileCenterX) * tileSize,

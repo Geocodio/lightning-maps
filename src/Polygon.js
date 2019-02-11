@@ -6,7 +6,7 @@ export default class Polygon {
   constructor(json, objectName, options = {}) {
     this._options = Object.assign({}, defaultPolygonOptions, options);
 
-    window._geometry = feature(json, json.objects[objectName]);
+    this.geometry = feature(json, json.objects[objectName]);
   }
 
   get options() {
@@ -37,13 +37,88 @@ export default class Polygon {
     this._projectedGeometryState = projectedGeometryState;
   }
 
-  createOffscreenCanvas(size) {
-    const canvas = document.createElement('canvas');
+  createOffscreenCanvas() {
+    this.offscreenCanvas = document.createElement('canvas');
+    this.offscreenCanvas.width = this.polygonDimensions[0];
+    this.offscreenCanvas.height = this.polygonDimensions[1];
 
-    canvas.width = 10000;
-    canvas.height = 10000;
+    this.offscreenCanvas.getContext('2d').fillStyle = 'rgba(255, 255, 255, 0.6)';
+    this.offscreenCanvas.getContext('2d').fillRect(0, 0, this.polygonDimensions[0], this.polygonDimensions[1]);
 
-    this.offscreenCanvas = canvas;
+    return this.offscreenCanvas.getContext('2d');
+  }
+
+  calculatePolygonExtends() {
+    let minX, maxX, minY, maxY = null;
+
+    this.mapGeometry(position => {
+      if (!maxX || position[0] > maxX) {
+        maxX = position[0];
+      }
+
+      if (!minX || position[0] < minX) {
+        minX = position[0];
+      }
+
+      if (!maxY || position[1] > maxY) {
+        maxY = position[1];
+      }
+
+      if (!minY || position[1] < minY) {
+        minY = position[1];
+      }
+    });
+
+    this.polygonDimensions = [
+      Math.ceil(maxX - minX),
+      Math.ceil(maxY - minY)
+    ];
+
+    this.polygonExtends = {
+      minX, maxX,
+      minY, maxY
+    };
+  }
+
+  renderOffscreenCanvas(mapState) {
+    this.projectedGeometryState = this.buildState(mapState);
+    this.projectedGeometry = this.geometry.features.map(feature => {
+      return {
+        ...feature,
+        geometry: this.projectGeometry(feature.geometry, mapState)
+      };
+    });
+
+    this.calculatePolygonExtends();
+    const offscreenContext = this.createOffscreenCanvas();
+
+    offscreenContext.fillStyle = this.options.color;
+    offscreenContext.strokeStyle = this.options.color;
+    offscreenContext.beginPath();
+
+    this.mapGeometry((position, index) => {
+      position = [
+        position[0] - this.polygonExtends.minX,
+        position[1] - this.polygonExtends.minY
+      ];
+
+      if (index === 0) {
+        offscreenContext.moveTo(position[0], position[1]);
+      } else {
+        offscreenContext.lineTo(position[0], position[1]);
+      }
+    });
+
+    offscreenContext.fill();
+    offscreenContext.stroke();
+  }
+
+  mapGeometry(pointCallback) {
+    this.projectedGeometry.map((item) =>
+      item.geometry.map((list) =>
+        list.map(pointCallback)
+      )
+    );
   }
 
   render(context, mapState) {
@@ -51,56 +126,52 @@ export default class Polygon {
       return;
     }
 
+    let scale = 1,
+      zoomDiff = 0,
+      originZoom = null;
+
+    if (mapState.targetZoom > mapState.zoom) { // Zoming in
+      originZoom = Math.floor(mapState.zoom);
+    } else if (mapState.targetZoom < mapState.zoom) { // Zooming out
+      originZoom = Math.ceil(mapState.zoom);
+    }
+
+    zoomDiff = originZoom ? mapState.zoom - originZoom : 0;
+
     // Do we need to reproject the geometry?
-    if (this.buildState(mapState) !== this.projectedGeometryState) {
+    if (zoomDiff !== 0) {
+      scale = Math.pow(2, zoomDiff);
+    } else if (this.buildState(mapState) !== this.projectedGeometryState) {
       this.projectedGeometry = null;
     }
 
     if (!this.projectedGeometry) {
-      this.createOffscreenCanvas(mapState.canvasDimensions);
-
-      this.projectedGeometry = this.geometry.features.map(feature => {
-        return {
-          ...feature,
-          geometry: this.projectGeometry(feature.geometry, mapState)
-        };
-      });
-
-      this.projectedGeometryState = this.buildState(mapState);
-
-      const offscreenContext = this.offscreenCanvas.getContext('2d');
-
-      offscreenContext.fillStyle = this.options.color;
-      offscreenContext.strokeStyle = this.options.color;
-
-      offscreenContext.beginPath();
-      this.projectedGeometry.map(item => {
-        item.geometry.map(list => {
-          list.map((position, index) => {
-            position = [-position[0] + 5000, -position[1] + 5000];
-
-            if (index === 0) {
-              offscreenContext.moveTo(position[0], position[1]);
-            } else {
-              offscreenContext.lineTo(position[0], position[1]);
-            }
-          });
-        });
-      });
-
-      offscreenContext.fill();
-      offscreenContext.stroke();
+      this.renderOffscreenCanvas(mapState);
     }
+
+    const offset = [
+      this.polygonExtends.minX
+        - (TileConversion.lon2tile(mapState.center[1], originZoom || mapState.zoom, false) * mapState.tileSize),
+      this.polygonExtends.minY
+        - (TileConversion.lat2tile(mapState.center[0], originZoom || mapState.zoom, false) * mapState.tileSize)
+    ];
+
+    const scaledWidth = this.polygonDimensions[0] * scale,
+      scaledHeight = this.polygonDimensions[1] * scale;
 
     const center = [
       mapState.canvasDimensions[0] / 2,
       mapState.canvasDimensions[1] / 2
     ];
 
+    const x = center[0] + mapState.moveOffset[0] + (offset[0] * scale),
+      y = center[1] + mapState.moveOffset[1] + (offset[1] * scale);
+
     context.drawImage(
       this.offscreenCanvas,
-      center[0] + mapState.moveOffset[0] - 5000,
-      center[1] + mapState.moveOffset[1] - 5000
+      x, y,
+      scaledWidth,
+      scaledHeight
     );
   }
 
@@ -119,21 +190,20 @@ export default class Polygon {
   }
 
   projectPoint(mapState, x, y) {
-    return TileConversion.latLonToPixel(
+    const position = TileConversion.latLonToPixel(
       [y, x],
-      mapState.center,
+      null,
       mapState.zoom,
-      mapState.tileSize,
-      mapState.canvasDimensions
+      mapState.tileSize
     );
+
+    return [-position[0], -position[1]];
   }
 
   buildState(mapState) {
     return JSON.stringify([
-      mapState.center,
       mapState.zoom,
-      mapState.tileSize,
-      mapState.canvasDimensions
+      mapState.tileSize
     ]);
   }
 }

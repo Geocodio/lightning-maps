@@ -39,7 +39,7 @@ export const defaultMapOptions = {
   /**
    * How quickly panning and zooming animations are executed (in milliseconds)
    */
-  animationDurationMs: 300,
+  animationDurationMs: 3000,
 
   /*
    * Used for debouncing events such as scrolling

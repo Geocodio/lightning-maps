@@ -245,8 +245,7 @@ export default class Map {
           this.state.targetMoveOffset,
           this.options.center,
           this.options.zoom,
-          this.options.tileSize,
-          this.state.canvasDimensions
+          this.options.tileSize
         );
       }
 
@@ -371,8 +370,8 @@ export default class Map {
         this.state.tileLayers[0].drawTiles(this.state.scale);
       }
 
-      this.drawMarkers();
       this.drawPolygons();
+      this.drawMarkers();
       this.drawAttribution();
     }
 
@@ -417,8 +416,7 @@ export default class Map {
         marker.coords,
         this.options.center,
         this.options.zoom,
-        this.options.tileSize,
-        this.state.canvasDimensions
+        this.options.tileSize
       );
 
       marker.render(this.context, [
@@ -432,6 +430,7 @@ export default class Map {
     const mapState = new MapState(
       this.options.center,
       this.options.zoom,
+      this.state.targetZoom,
       this.options.tileSize,
       this.state.canvasDimensions,
       this.state.moveOffset
