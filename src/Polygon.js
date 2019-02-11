@@ -42,13 +42,13 @@ export default class Polygon {
     this.offscreenCanvas.width = this.polygonDimensions[0];
     this.offscreenCanvas.height = this.polygonDimensions[1];
 
-    this.offscreenCanvas.getContext('2d').fillStyle = 'rgba(255, 255, 255, 0.6)';
+    this.offscreenCanvas.getContext('2d').fillStyle = 'rgba(0, 0, 0, 0.5)';
     this.offscreenCanvas.getContext('2d').fillRect(0, 0, this.polygonDimensions[0], this.polygonDimensions[1]);
 
     return this.offscreenCanvas.getContext('2d');
   }
 
-  calculatePolygonExtends() {
+  calculatePolygonExtends(maxSize) {
     let minX, maxX, minY, maxY = null;
 
     this.mapGeometry(position => {
@@ -89,7 +89,12 @@ export default class Polygon {
       };
     });
 
-    this.calculatePolygonExtends();
+    const maxSize = [
+      mapState.canvasDimensions[0] * 2,
+      mapState.canvasDimensions[1]
+    ];
+
+    this.calculatePolygonExtends(maxSize);
     const offscreenContext = this.createOffscreenCanvas();
 
     offscreenContext.fillStyle = this.options.color;

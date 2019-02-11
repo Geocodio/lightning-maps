@@ -39,12 +39,13 @@ export const defaultMapOptions = {
   /**
    * How quickly panning and zooming animations are executed (in milliseconds)
    */
-  animationDurationMs: 3000,
+  animationDurationMs: 300,
 
   /*
    * Used for debouncing events such as scrolling
+   * Note: Currently needs to be greater than the animationDurationMs value
    */
-  debounceIntervalMs: 200,
+  debounceIntervalMs: 350,
 
   /**
    * Determines how many additional tiles that should be loaded, to decrease map load times when
