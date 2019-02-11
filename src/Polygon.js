@@ -13,12 +13,28 @@ export default class Polygon {
     return this._options;
   }
 
-  getGeometry() {
+  get geometry() {
     return window._geometry;
   }
 
-  getProjectedGeometry() {
+  set geometry(geometry) {
+    window._geometry = geometry;
+  }
+
+  get projectedGeometry() {
     return window._projectedGeometry;
+  }
+
+  set projectedGeometry(projectedGeometry) {
+    window._projectedGeometry = projectedGeometry;
+  }
+
+  get projectedGeometryState() {
+    return this._projectedGeometryState;
+  }
+
+  set projectedGeometryState(projectedGeometryState) {
+    this._projectedGeometryState = projectedGeometryState;
   }
 
   createOffscreenCanvas(size) {
@@ -31,26 +47,26 @@ export default class Polygon {
   }
 
   render(context, mapState) {
-    if (!this.getGeometry()) {
+    if (!this.geometry) {
       return;
     }
 
     // Do we need to reproject the geometry?
-    if (this.buildState(mapState) !== window._projectedGeometryState) {
-      window._projectedGeometry = null;
+    if (this.buildState(mapState) !== this.projectedGeometryState) {
+      this.projectedGeometry = null;
     }
 
-    if (!this.getProjectedGeometry()) {
+    if (!this.projectedGeometry) {
       this.createOffscreenCanvas(mapState.canvasDimensions);
 
-      window._projectedGeometry = this.getGeometry().features.map(feature => {
+      this.projectedGeometry = this.geometry.features.map(feature => {
         return {
           ...feature,
           geometry: this.projectGeometry(feature.geometry, mapState)
         };
       });
 
-      window._projectedGeometryState = this.buildState(mapState);
+      this.projectedGeometryState = this.buildState(mapState);
 
       const offscreenContext = this.offscreenCanvas.getContext('2d');
 
@@ -58,7 +74,7 @@ export default class Polygon {
       offscreenContext.strokeStyle = this.options.color;
 
       offscreenContext.beginPath();
-      this.getProjectedGeometry().map(item => {
+      this.projectedGeometry.map(item => {
         item.geometry.map(list => {
           list.map((position, index) => {
             position = [-position[0] + 5000, -position[1] + 5000];
