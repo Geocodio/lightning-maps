@@ -21,13 +21,19 @@ export default class Polygon {
     return window._projectedGeometry;
   }
 
+  createOffscreenCanvas(size) {
+    const canvas = document.createElement('canvas');
+
+    canvas.width = 10000;
+    canvas.height = 10000;
+
+    this.offscreenCanvas = canvas;
+  }
+
   render(context, mapState) {
     if (!this.getGeometry()) {
       return;
     }
-
-    context.fillStyle = this.options.color;
-    context.strokeStyle = this.options.color;
 
     // Do we need to reproject the geometry?
     if (this.buildState(mapState) !== window._projectedGeometryState) {
@@ -35,6 +41,8 @@ export default class Polygon {
     }
 
     if (!this.getProjectedGeometry()) {
+      this.createOffscreenCanvas(mapState.canvasDimensions);
+
       window._projectedGeometry = this.getGeometry().features.map(feature => {
         return {
           ...feature,
@@ -43,6 +51,29 @@ export default class Polygon {
       });
 
       window._projectedGeometryState = this.buildState(mapState);
+
+      const offscreenContext = this.offscreenCanvas.getContext('2d');
+
+      offscreenContext.fillStyle = this.options.color;
+      offscreenContext.strokeStyle = this.options.color;
+
+      offscreenContext.beginPath();
+      this.getProjectedGeometry().map(item => {
+        item.geometry.map(list => {
+          list.map((position, index) => {
+            position = [-position[0] + 5000, -position[1] + 5000];
+
+            if (index === 0) {
+              offscreenContext.moveTo(position[0], position[1]);
+            } else {
+              offscreenContext.lineTo(position[0], position[1]);
+            }
+          });
+        });
+      });
+
+      offscreenContext.fill();
+      offscreenContext.stroke();
     }
 
     const center = [
@@ -50,53 +81,11 @@ export default class Polygon {
       mapState.canvasDimensions[1] / 2
     ];
 
-    context.beginPath();
-    this.getProjectedGeometry().map(item => {
-      item.geometry.map(list => {
-        const coordinatesInsideViewPort = list.filter(position => {
-          const coordinate = this.offsetCoordinate(position, center, mapState.moveOffset);
-
-          return (coordinate[0] > 0 && coordinate[1] > 0
-            && coordinate[0] <= mapState.canvasDimensions[0] && coordinate[1] <= mapState.canvasDimensions[1]);
-        });
-
-        if (coordinatesInsideViewPort.length > 0) {
-          list.map((position, index) => {
-            const coordinate = this.offsetCoordinate(position, center, mapState.moveOffset, mapState.canvasDimensions);
-
-            if (index === 0) {
-              context.moveTo(coordinate[0], coordinate[1]);
-            } else {
-              context.lineTo(coordinate[0], coordinate[1]);
-            }
-          });
-        }
-      });
-    });
-
-    context.fill();
-    context.stroke();
-  }
-
-  offsetCoordinate(position, center, moveOffset, canvasDimensions = null) {
-    let x = center[0] - position[0] + moveOffset[0],
-      y = center[1] - position[1] + moveOffset[1];
-
-    if (canvasDimensions) {
-      if (x < 0) {
-        x = 0;
-      } else if (x > canvasDimensions[0]) {
-        x = canvasDimensions[0];
-      }
-
-      if (y < 0) {
-        y = 0;
-      } else if (y > canvasDimensions[1]) {
-        y = canvasDimensions[1];
-      }
-    }
-
-    return [x, y];
+    context.drawImage(
+      this.offscreenCanvas,
+      center[0] + mapState.moveOffset[0] - 5000,
+      center[1] + mapState.moveOffset[1] - 5000
+    );
   }
 
   projectGeometry(geometry, mapState) {
