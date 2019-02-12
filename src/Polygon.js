@@ -52,17 +52,31 @@ export default class Polygon {
       ? Math.pow(2, zoomDiff)
       : 1;
 
-    // Is a re-render necessary?
-    if (zoomDiff === 0 && this.renderedZoomLevel !== mapState.zoom) {
-      this.renderOffscreenCanvas(mapState);
-    }
+    const mapCenterChanged = this.renderedMapCenter !== mapState.center,
+      mapZoomChanged = (zoomDiff === 0 && this.renderedZoomLevel !== mapState.zoom);
 
-    const centerOffset = [
-      this.polygonExtends.minX
-        - (TileConversion.lon2tile(mapState.center[1], originZoom || mapState.zoom, false) * mapState.tileSize),
-      this.polygonExtends.minY
-        - (TileConversion.lat2tile(mapState.center[0], originZoom || mapState.zoom, false) * mapState.tileSize)
-    ];
+    const shouldReRender = mapCenterChanged || mapZoomChanged;
+
+    let centerOffset = null;
+
+    if (shouldReRender) {
+      this.renderedZoomLevel = mapState.zoom;
+      this.renderedMapCenter = mapState.center;
+
+      this.projectedGeometry = this.geometry.features.map(feature => {
+        return {
+          ...feature,
+          geometry: this.projectGeometry(feature.geometry, mapState)
+        };
+      });
+
+      centerOffset = [
+        -(TileConversion.lon2tile(mapState.center[1], originZoom, false) * mapState.tileSize),
+        -(TileConversion.lat2tile(mapState.center[0], originZoom, false) * mapState.tileSize)
+      ];
+
+      this.calculatePolygonExtends(centerOffset);
+    }
 
     const scaledWidth = this.polygonDimensions[0] * scale,
       scaledHeight = this.polygonDimensions[1] * scale;
@@ -72,19 +86,34 @@ export default class Polygon {
       mapState.canvasDimensions[1] / 2
     ];
 
-    const x = canvasCenter[0] + mapState.moveOffset[0] + (centerOffset[0] * scale),
-      y = canvasCenter[1] + mapState.moveOffset[1] + (centerOffset[1] * scale);
+    const imagePosition = [
+      canvasCenter[0] + mapState.moveOffset[0] + (this.polygonExtends.minX * scale),
+      canvasCenter[1] + mapState.moveOffset[1] + (this.polygonExtends.minY * scale)
+    ];
+
+    if (shouldReRender) {
+      const imageRect = {
+        left: Math.floor(imagePosition[0] < 0 ? Math.abs(imagePosition[0]) : 0),
+        right: Math.ceil(Math.abs(imagePosition[0]) + mapState.canvasDimensions[0]),
+        top: Math.floor(imagePosition[1] < 0 ? Math.abs(imagePosition[1]) : 0),
+        bottom: Math.ceil(Math.abs(imagePosition[1]) + mapState.canvasDimensions[1])
+      };
+
+      // console.log(JSON.stringify(imageRect, null, 4));
+      // console.log(imagePosition);
+
+      this.renderOffscreenCanvas(mapState, centerOffset, imageRect);
+    }
 
     context.drawImage(
       this.offscreenCanvas,
-      x, y,
-      scaledWidth,
-      scaledHeight
+      imagePosition[0], imagePosition[1],
+      scaledWidth, scaledHeight
     );
   }
 
   determineOriginZoom(mapState) {
-    let originZoom = null;
+    let originZoom = mapState.zoom;
 
     if (mapState.targetZoom > mapState.zoom) { // Zoming in
       originZoom = Math.floor(mapState.zoom);
@@ -95,21 +124,30 @@ export default class Polygon {
     return originZoom;
   }
 
-  createOffscreenCanvas() {
+  createOffscreenCanvas(clipRect) {
+    console.log(this.polygonDimensions, JSON.stringify(clipRect, null, 4));
+
+    this.polygonDimensions = [
+      this.polygonDimensions[0] - clipRect.left,
+      this.polygonDimensions[1] - clipRect.top
+    ];
+
     this.offscreenCanvas = document.createElement('canvas');
     this.offscreenCanvas.width = this.polygonDimensions[0];
     this.offscreenCanvas.height = this.polygonDimensions[1];
 
-    // this.offscreenCanvas.getContext('2d').fillStyle = 'rgba(0, 0, 0, 0.5)';
-    // this.offscreenCanvas.getContext('2d').fillRect(0, 0, this.polygonDimensions[0], this.polygonDimensions[1]);
-
     return this.offscreenCanvas.getContext('2d');
   }
 
-  calculatePolygonExtends(maxSize) {
+  calculatePolygonExtends(centerOffset) {
     let minX, maxX, minY, maxY = null;
 
     this.mapGeometry(position => {
+      position = [
+        position[0] + centerOffset[0],
+        position[1] + centerOffset[1]
+      ];
+
       if (!maxX || position[0] > maxX) {
         maxX = position[0];
       }
@@ -138,38 +176,50 @@ export default class Polygon {
     };
   }
 
-  renderOffscreenCanvas(mapState) {
-    this.renderedZoomLevel = mapState.zoom;
-    this.projectedGeometry = this.geometry.features.map(feature => {
-      return {
-        ...feature,
-        geometry: this.projectGeometry(feature.geometry, mapState)
-      };
-    });
+  renderOffscreenCanvas(mapState, centerOffset, clipRect) {
+    const offscreenContext = this.createOffscreenCanvas(clipRect);
 
-    const maxSize = [
-      mapState.canvasDimensions[0] * 2,
-      mapState.canvasDimensions[1] * 2
-    ];
-
-    this.calculatePolygonExtends(maxSize);
-    const offscreenContext = this.createOffscreenCanvas();
+    /*
+    offscreenContext.fillStyle = 'green';
+    offscreenContext.fillRect(
+      clipRect.left,
+      clipRect.top,
+      clipRect.right - clipRect.left,
+      clipRect.bottom - clipRect.top
+    );
+    */
 
     offscreenContext.beginPath();
     this.applyContextStyles(offscreenContext);
 
-    this.mapGeometry((position, index) => {
-      position = [
-        position[0] - this.polygonExtends.minX,
-        position[1] - this.polygonExtends.minY
-      ];
+    this.projectedGeometry.map((item) =>
+      item.geometry.map((list) => {
+        const pointsInClipRect = list.filter(position => {
+          position = [
+            position[0] - this.polygonExtends.minX + centerOffset[0],
+            position[1] - this.polygonExtends.minY + centerOffset[1]
+          ];
 
-      if (index === 0) {
-        offscreenContext.moveTo(position[0], position[1]);
-      } else {
-        offscreenContext.lineTo(position[0], position[1]);
-      }
-    });
+          return position[0] >= clipRect.left && position[0] <= clipRect.right
+           && position[1] >= clipRect.top && position[1] <= clipRect.bottom;
+        });
+
+        if (pointsInClipRect.length > 0) {
+          list.map((position, index) => {
+            position = [
+              position[0] - this.polygonExtends.minX + centerOffset[0],
+              position[1] - this.polygonExtends.minY + centerOffset[1]
+            ];
+
+            if (index === 0) {
+              offscreenContext.moveTo(position[0], position[1]);
+            } else {
+              offscreenContext.lineTo(position[0], position[1]);
+            }
+          });
+        }
+      })
+    );
 
     if (this.options.enableStroke) offscreenContext.fill();
     if (this.options.enableFill) offscreenContext.stroke();
