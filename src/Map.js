@@ -454,6 +454,7 @@ export default class Map {
 
     this.state.polygons.map(polygon => {
       polygon.render(this.context, mapState);
+      polygon.handleMouseOver(this.context, mapState, this.state.mousePosition);
     });
   }
 
@@ -501,8 +502,9 @@ export default class Map {
         this.state.moveOffset
       );
 
-      polygons = this.state.polygons.map(polygon => polygon.featuresWithMouseOver(mapState, this.state.mousePosition))
-        .filter(polygon => polygon.length > 0);
+      polygons = this.state.polygons.map(polygon =>
+        polygon.handleMouseOver(this.context, mapState, this.state.mousePosition)
+      ).filter(polygon => polygon.length > 0);
     }
 
     if (polygons.length > 0) {

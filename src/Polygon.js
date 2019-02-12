@@ -38,10 +38,10 @@ export default class Polygon {
     this._projectedGeometryState = projectedGeometryState;
   }
 
-  featuresWithMouseOver(mapState, mousePosition) {
+  handleMouseOver(context, mapState, mousePosition) {
     const currentlyZooming = Math.round(mapState.zoom) !== mapState.zoom;
 
-    if (!this.geometry || currentlyZooming) {
+    if (!this.geometry || !this.projectedGeometry || currentlyZooming) {
       return [];
     }
 
@@ -57,9 +57,34 @@ export default class Polygon {
       mousePosition.y - centerOffset[1] - canvasCenter[1]
     ];
 
-    return this.projectedGeometry.filter(item =>
-      item.geometry.filter(list => classifyPoint(list, point) === -1).length > 0
-    );
+    return this.projectedGeometry.filter(item => {
+      const isHover = item.geometry.filter(list => classifyPoint(list, point) === -1).length > 0;
+
+      if (isHover) {
+        context.beginPath();
+
+        item.geometry.map((list) => {
+          list.map((position, index) => {
+            position = [
+              position[0] + centerOffset[0] + canvasCenter[0],
+              position[1] + centerOffset[1] + canvasCenter[1]
+            ];
+
+            if (index === 0) {
+              context.moveTo(position[0], position[1]);
+            } else {
+              context.lineTo(position[0], position[1]);
+            }
+          });
+        });
+
+        context.strokeStyle = 'red';
+        context.lineWidth = 0.5 * mapState.zoom;
+        context.stroke();
+      }
+
+      return isHover;
+    });
   }
 
   calculateCenterOffset(mapState, originZoom) {
