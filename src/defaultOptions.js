@@ -43,7 +43,7 @@ export const defaultMapOptions = {
 
   /*
    * Used for debouncing events such as scrolling
-   * Note: Currently needs to be greater than the animationDurationMs value
+   * Note: Needs to be greater than the animationDurationMs value
    */
   debounceIntervalMs: 350,
 
@@ -54,12 +54,6 @@ export const defaultMapOptions = {
    * Minimum value: 1.25
    */
   tileAreaMultiplier: 2,
-
-  /**
-   * If enabled, a double click will center the map on the given location and zoom in
-   * Note: Currently disabled per default as the feature is buggy/unstable
-   */
-  doubleClickToZoom: false,
 
   /**
    * When debug mode is enabled, additional rendering artifacts are drawn. Should only be used in
