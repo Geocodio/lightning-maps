@@ -462,32 +462,31 @@ export default class Map {
       y: event.clientY
     };
 
-    const controlsBounds = this.getControlsBounds();
+    const controlObjects = this.getControlObjects().filter(item => this.isMouseOverObject(item.bounds));
 
-    const zoomInHover = this.isMouseOverObject(controlsBounds.zoomIn);
-    const zoomOutHover = this.isMouseOverObject(controlsBounds.zoomOut);
-
-    const hoveredMarkers = (this.onMarkerClicked || this.onMarkerHover)
+    const markers = controlObjects.length <= 0 && (this.onMarkerClicked || this.onMarkerHover)
       ? this.getMarkersBounds().filter(item => this.isMouseOverObject(item.bounds))
       : [];
 
     if (name === 'mouseup') {
-      if (zoomInHover) {
-        this.setZoom(this.options.zoom + 1);
-      } else if (zoomOutHover) {
-        this.setZoom(this.options.zoom - 1);
+      if (controlObjects.length > 0) {
+        const controlObject = controlObjects[0];
+
+        this.setZoom(controlObject.label === '+'
+          ? this.options.zoom + 1
+          : this.options.zoom - 1);
       }
 
       if (this.onMarkerClicked) {
-        hoveredMarkers.map(item => this.onMarkerClicked(item.marker));
+        markers.map(item => this.onMarkerClicked(item.marker));
       }
     } else {
       if (this.onMarkerHover) {
-        hoveredMarkers.map(item => this.onMarkerHover(item.marker));
+        markers.map(item => this.onMarkerHover(item.marker));
       }
     }
 
-    const anyItemIsHover = zoomInHover || zoomOutHover || hoveredMarkers.length > 0;
+    const anyItemIsHover = controlObjects.length > 0 || markers.length > 0;
 
     this.canvas.style.cursor = anyItemIsHover
       ? 'pointer'
@@ -496,24 +495,30 @@ export default class Map {
     return anyItemIsHover;
   }
 
-  getControlsBounds() {
+  getControlObjects() {
     const margin = 4;
     const size = 30;
 
-    return {
-      zoomIn: {
-        x: margin,
-        y: margin,
-        width: size,
-        height: size
+    return [
+      {
+        bounds: {
+          x: margin,
+          y: margin,
+          width: size,
+          height: size
+        },
+        label: '+'
       },
-      zoomOut: {
-        x: margin,
-        y: margin + size + margin,
-        width: size,
-        height: size
+      {
+        bounds: {
+          x: margin,
+          y: margin + size + margin,
+          width: size,
+          height: size
+        },
+        label: '-'
       }
-    };
+    ];
   }
 
   getMarkersBounds() {
@@ -544,10 +549,7 @@ export default class Map {
   }
 
   renderControls() {
-    const bounds = this.getControlsBounds();
-
-    this.renderControl(bounds.zoomIn, '+');
-    this.renderControl(bounds.zoomOut, '-');
+    this.getControlObjects().map(item => this.renderControl(item.bounds, item.label));
   }
 
   renderControl(bounds, label) {
