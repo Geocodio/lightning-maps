@@ -17,9 +17,15 @@ export default class Map {
 
     this.initializeState();
     this.attachEvents();
-    this.applyStyles();
 
     this.lastDrawState = null;
+
+    /**
+     * Events
+     */
+    this.onMarkerClicked = null;
+    this.onMarkerHover = null;
+    this.onPolygonHover = null;
 
     this.draw = this.draw.bind(this);
     window.requestAnimationFrame(this.draw);
@@ -34,7 +40,7 @@ export default class Map {
       targetMoveOffsetIsCoord: false,
       moveAnimationStart: null,
       dragStartPosition: null,
-      lastEventActionTime: null,
+      lastZoomEventActionTime: null,
       startZoom: this.options.zoom,
       targetZoom: this.options.zoom,
       zoomAnimationStart: null,
@@ -45,7 +51,8 @@ export default class Map {
       polygons: [],
       tileLayers: [
         new TileLayer(this)
-      ]
+      ],
+      mousePosition: { x: 0, y: 0}
     };
   }
 
@@ -54,13 +61,13 @@ export default class Map {
   }
 
   setZoom(zoom) {
-    if (this.zoomValueIsValid(zoom)) {
+    if (this.zoomValueIsValid(zoom) && this.isReadyForZoomEvent()) {
       zoom = Math.round(zoom);
 
       this.state.tileLayers.push(new TileLayer(this, zoom));
       // this.state.tileLayers[0].tilesZoomLevel = this.options.zoom;
 
-      this.state.lastEventActionTime = window.performance.now();
+      this.state.lastZoomEventActionTime = window.performance.now();
       this.state.zoomAnimationStart = window.performance.now();
       this.state.targetZoom = zoom;
       this.state.startZoom = this.options.zoom;
@@ -103,13 +110,13 @@ export default class Map {
     return zoom >= 1 && zoom <= 18;
   }
 
-  isReadyForEvent() {
-    if (!this.state.lastEventActionTime) {
+  isReadyForZoomEvent() {
+    if (!this.state.lastZoomEventActionTime) {
       return true;
     }
 
     const now = window.performance.now();
-    const milliSecondsSinceLastEvent = now - this.state.lastEventActionTime;
+    const milliSecondsSinceLastEvent = now - this.state.lastZoomEventActionTime;
 
     return milliSecondsSinceLastEvent > this.options.debounceIntervalMs;
   }
@@ -122,79 +129,80 @@ export default class Map {
     this.canvas.addEventListener('wheel', event => {
       event.preventDefault();
 
-      if (this.isReadyForEvent()) {
-        if (event.deltaY > 5) {
-          this.setZoom(this.options.zoom - 1);
-        } else if (event.deltaY < -5) {
-          this.setZoom(this.options.zoom + 1);
-        }
+      if (event.deltaY > 5) {
+        this.setZoom(this.options.zoom - 1);
+      } else if (event.deltaY < -5) {
+        this.setZoom(this.options.zoom + 1);
       }
     });
 
     this.canvas.addEventListener('dblclick', event => {
       event.preventDefault();
 
-      if (this.options.doubleClickToZoom) {
-        const centerX = this.state.canvasDimensions[0] / 2;
-        const centerY = this.state.canvasDimensions[1] / 2;
+      const canvasCenter = this.getCanvasCenter();
 
-        this.setTargetMoveOffset(
-          -(event.clientX - centerX),
-          -(event.clientY - centerY)
-        );
+      this.setTargetMoveOffset(
+        -(event.clientX - canvasCenter[0]),
+        -(event.clientY - canvasCenter[1])
+      );
 
-        this.setZoom(this.options.zoom + 1);
-      }
+      this.setZoom(this.options.zoom + 1);
     });
 
     this.canvas.addEventListener('mousedown', event => {
       event.preventDefault();
 
-      this.state.mouseVelocities = [];
+      if (!this.handleMouseEventInteraction(event, 'mousedown')) {
+        this.state.mouseVelocities = [];
 
-      this.state.dragStartPosition = [
-        event.clientX - this.state.moveOffset[0],
-        event.clientY - this.state.moveOffset[1]
-      ];
+        this.state.dragStartPosition = [
+          event.clientX - this.state.moveOffset[0],
+          event.clientY - this.state.moveOffset[1]
+        ];
+      }
     });
 
     this.canvas.addEventListener('mouseup', event => {
       event.preventDefault();
 
-      const x = -(this.state.dragStartPosition[0] - event.clientX);
-      const y = -(this.state.dragStartPosition[1] - event.clientY);
+      if (!this.state.dragStartPosition) {
+        this.handleMouseEventInteraction(event, 'mouseup');
+      } else {
+        const x = -(this.state.dragStartPosition[0] - event.clientX);
+        const y = -(this.state.dragStartPosition[1] - event.clientY);
 
-      if (this.state.moveOffset[0] !== 0 || this.state.moveOffset[1] !== 0) {
-        const now = window.performance.now();
-        const timingThreshold = now - this.options.throwTimingThresholdMs;
+        if (this.state.moveOffset[0] !== 0 || this.state.moveOffset[1] !== 0) {
+          const now = window.performance.now();
+          const timingThreshold = now - this.options.throwTimingThresholdMs;
 
-        const thresholdsToConsider = this.state.mouseVelocities
-          .filter(threshold => threshold[0] > timingThreshold)
-          .map(threshold => threshold[1]);
+          const thresholdsToConsider = this.state.mouseVelocities
+            .filter(threshold => threshold[0] > timingThreshold)
+            .map(threshold => threshold[1]);
 
-        const velocitySum = thresholdsToConsider.reduce(
-          (accumulator, velocity) => accumulator + velocity,
-          0
-        );
-
-        const averageVelocity = velocitySum / thresholdsToConsider.length;
-
-        if (averageVelocity >= this.options.throwVelocityThreshold) {
-          let multiplier = averageVelocity / this.options.throwVelocityThreshold
-            * this.options.panAccelerationMultiplier;
-
-          multiplier = Math.min(multiplier, this.options.maxPanAcceleration);
-
-          this.setTargetMoveOffset(
-            x * multiplier,
-            y * multiplier
+          const velocitySum = thresholdsToConsider.reduce(
+            (accumulator, velocity) => accumulator + velocity,
+            0
           );
-        } else {
-          this.updateCenter();
-        }
-      }
 
-      this.state.dragStartPosition = null;
+          const averageVelocity = velocitySum / thresholdsToConsider.length;
+
+          if (averageVelocity >= this.options.throwVelocityThreshold) {
+            let multiplier = averageVelocity / this.options.throwVelocityThreshold
+              * this.options.panAccelerationMultiplier;
+
+            multiplier = Math.min(multiplier, this.options.maxPanAcceleration);
+
+            this.setTargetMoveOffset(
+              x * multiplier,
+              y * multiplier
+            );
+          } else {
+            this.updateCenter();
+          }
+        }
+
+        this.state.dragStartPosition = null;
+      }
     });
 
     this.canvas.addEventListener('mousemove', event => {
@@ -215,14 +223,12 @@ export default class Map {
 
         this.setTargetMoveOffset(x, y, false);
         this.state.lastMouseMoveEvent = window.performance.now();
+      } else {
+        this.handleMouseEventInteraction(event, 'mousemove');
       }
 
       return false;
     });
-  }
-
-  applyStyles() {
-    this.canvas.style.cursor = 'grab';
   }
 
   easeOutQuad(time) {
@@ -245,8 +251,7 @@ export default class Map {
           this.state.targetMoveOffset,
           this.options.center,
           this.options.zoom,
-          this.options.tileSize,
-          this.state.canvasDimensions
+          this.options.tileSize
         );
       }
 
@@ -371,24 +376,27 @@ export default class Map {
         this.state.tileLayers[0].drawTiles(this.state.scale);
       }
 
-      this.drawMarkers();
-      this.drawPolygons();
-      this.drawAttribution();
+      this.renderPolygons();
+      this.renderMarkers();
+      this.renderControls();
+      this.renderAttribution();
     }
 
     window.requestAnimationFrame(this.draw);
   }
 
   getMapBounds() {
+    const canvasCenter = this.getCanvasCenter();
+
     const nw = TileConversion.pixelToLatLon(
-      [this.state.canvasDimensions[0] / 2, (this.state.canvasDimensions[1] / 2)],
+      [canvasCenter[0], canvasCenter[1]],
       this.options.center,
       this.options.zoom,
       this.options.tileSize
     );
 
     const se = TileConversion.pixelToLatLon(
-      [-this.state.canvasDimensions[0] / 2, -(this.state.canvasDimensions[1] / 2)],
+      [-canvasCenter[0], -canvasCenter[1]],
       this.options.center,
       this.options.zoom,
       this.options.tileSize
@@ -399,39 +407,46 @@ export default class Map {
     };
   }
 
-  drawMarkers() {
+  getVisibleMarkers() {
     const bounds = this.getMapBounds();
 
-    const visibleMarkers = this.state.markers.filter(marker => {
+    return this.state.markers.filter(marker => {
       return marker.coords[0] <= bounds.nw[0] && marker.coords[0] >= bounds.se[0]
         && marker.coords[1] >= bounds.nw[1] && marker.coords[1] <= bounds.se[1];
     });
+  }
 
-    const center = [
+  getCanvasCenter() {
+    return [
       this.state.canvasDimensions[0] / 2,
       this.state.canvasDimensions[1] / 2
     ];
+  }
+
+  renderMarkers() {
+    const visibleMarkers = this.getVisibleMarkers();
+    const canvasCenter = this.getCanvasCenter();
 
     visibleMarkers.map(marker => {
       const position = TileConversion.latLonToPixel(
         marker.coords,
         this.options.center,
         this.options.zoom,
-        this.options.tileSize,
-        this.state.canvasDimensions
+        this.options.tileSize
       );
 
       marker.render(this.context, [
-        center[0] - position[0] + this.state.moveOffset[0],
-        center[1] - position[1] + this.state.moveOffset[1]
+        canvasCenter[0] - position[0] + this.state.moveOffset[0],
+        canvasCenter[1] - position[1] + this.state.moveOffset[1]
       ]);
     });
   }
 
-  drawPolygons() {
+  renderPolygons() {
     const mapState = new MapState(
       this.options.center,
       this.options.zoom,
+      this.state.targetZoom,
       this.options.tileSize,
       this.state.canvasDimensions,
       this.state.moveOffset
@@ -439,13 +454,168 @@ export default class Map {
 
     this.state.polygons.map(polygon => {
       polygon.render(this.context, mapState);
+      polygon.handleMouseOver(this.context, mapState, this.state.mousePosition);
     });
   }
 
-  drawAttribution() {
+  handleMouseEventInteraction(event, name) {
+    this.state.mousePosition = {
+      x: event.clientX,
+      y: event.clientY
+    };
+
+    const controlObjects = this.getControlObjects().filter(item => this.isMouseOverObject(item.bounds));
+
+    const markers = controlObjects.length <= 0 && (this.onMarkerClicked || this.onMarkerHover)
+      ? this.getMarkersBounds().filter(item => this.isMouseOverObject(item.bounds))
+      : [];
+
+    if (name === 'mouseup') {
+      if (controlObjects.length > 0) {
+        const controlObject = controlObjects[0];
+
+        this.setZoom(controlObject.label === '+'
+          ? this.options.zoom + 1
+          : this.options.zoom - 1);
+      }
+
+      if (this.onMarkerClicked) {
+        markers.map(item => this.onMarkerClicked(item.marker));
+      }
+    } else {
+      if (this.onMarkerHover) {
+        markers.map(item => this.onMarkerHover(item.marker));
+      }
+    }
+
+    let anyItemIsHover = controlObjects.length > 0 || markers.length > 0;
+
+    let polygons = [];
+
+    if (!anyItemIsHover) {
+      const mapState = new MapState(
+        this.options.center,
+        this.options.zoom,
+        this.state.targetZoom,
+        this.options.tileSize,
+        this.state.canvasDimensions,
+        this.state.moveOffset
+      );
+
+      polygons = this.state.polygons.map(polygon =>
+        polygon.handleMouseOver(this.context, mapState, this.state.mousePosition)
+      ).filter(polygon => polygon.length > 0);
+    }
+
+    if (polygons.length > 0) {
+      anyItemIsHover = true;
+
+      if (this.onPolygonHover) {
+        polygons.map(polygon => polygon.map(item => this.onPolygonHover(item)));
+      }
+    }
+
+    this.canvas.style.cursor = anyItemIsHover
+      ? 'pointer'
+      : 'grab';
+
+    return anyItemIsHover;
+  }
+
+  getControlObjects() {
+    const margin = 4;
+    const size = 30;
+
+    return [
+      {
+        bounds: {
+          x: margin,
+          y: margin,
+          width: size,
+          height: size
+        },
+        label: '+'
+      },
+      {
+        bounds: {
+          x: margin,
+          y: margin + size + margin,
+          width: size,
+          height: size
+        },
+        label: '-'
+      }
+    ];
+  }
+
+  getMarkersBounds() {
+    const visibleMarkers = this.getVisibleMarkers();
+    const canvasCenter = this.getCanvasCenter();
+
+    return visibleMarkers.map(marker => {
+      const position = TileConversion.latLonToPixel(
+        marker.coords,
+        this.options.center,
+        this.options.zoom,
+        this.options.tileSize
+      );
+
+      const markerSize = marker.size;
+      const markerOffset = marker.offset;
+
+      return {
+        bounds: {
+          x: canvasCenter[0] - position[0] + this.state.moveOffset[0] - (markerSize[0] / 2) + markerOffset[0],
+          y: canvasCenter[1] - position[1] + this.state.moveOffset[1] - (markerSize[1] / 2) + markerOffset[1],
+          width: markerSize[0],
+          height: markerSize[1]
+        },
+        marker
+      };
+    });
+  }
+
+  renderControls() {
+    this.getControlObjects().map(item => this.renderControl(item.bounds, item.label));
+  }
+
+  renderControl(bounds, label) {
+    const radius = 10;
+
+    // Background
+    this.context.fillStyle = this.isMouseOverObject(bounds)
+      ? 'rgba(100, 100, 100, 0.7)'
+      : 'rgba(0, 0, 0, 0.7)';
+
+    this.roundedRectangle(bounds.x, bounds.y, bounds.width, bounds.height, radius);
+
+    // Text
+    this.context.font = 'bold 25px courier';
+    this.context.textAlign = 'center';
+    this.context.textBaseline = 'middle';
+    this.context.fillStyle = 'rgba(255, 255, 255)';
+
+    this.context.fillText(
+      label,
+      bounds.x + (bounds.width / 2),
+      bounds.y + (bounds.height / 2)
+    );
+  }
+
+  isMouseOverObject(bounds) {
+    return this.state.mousePosition.x >= bounds.x
+      && this.state.mousePosition.x <= bounds.x + bounds.width
+      && this.state.mousePosition.y >= bounds.y
+      && this.state.mousePosition.y <= bounds.y + bounds.height;
+  }
+
+  renderAttribution() {
     const margin = 4;
 
     this.context.font = 'bold 12px sans-serif';
+    this.context.textAlign = 'left';
+    this.context.textBaseline = 'alphabetic';
+
     const textBounds = this.context.measureText(this.options.attribution);
 
     const x = this.state.canvasDimensions[0] - textBounds.width - margin;
@@ -456,12 +626,9 @@ export default class Map {
 
     this.context.fillStyle = 'rgba(0, 0, 0, 0.7)';
     this.context.fillText(this.options.attribution, x, y);
-
   }
 
-  roundedRectangle(x, y, width, height) {
-    const radius = 5;
-
+  roundedRectangle(x, y, width, height, radius = 5) {
     this.context.beginPath();
     this.context.moveTo(x + radius, y);
     this.context.lineTo(x + width - radius, y);

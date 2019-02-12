@@ -43,8 +43,9 @@ export const defaultMapOptions = {
 
   /*
    * Used for debouncing events such as scrolling
+   * Note: Needs to be greater than the animationDurationMs value
    */
-  debounceIntervalMs: 200,
+  debounceIntervalMs: 350,
 
   /**
    * Determines how many additional tiles that should be loaded, to decrease map load times when
@@ -53,12 +54,6 @@ export const defaultMapOptions = {
    * Minimum value: 1.25
    */
   tileAreaMultiplier: 2,
-
-  /**
-   * If enabled, a double click will center the map on the given location and zoom in
-   * Note: Currently disabled per default as the feature is buggy/unstable
-   */
-  doubleClickToZoom: false,
 
   /**
    * When debug mode is enabled, additional rendering artifacts are drawn. Should only be used in
@@ -82,8 +77,42 @@ export const defaultMarkerOptions = {
 
 export const defaultPolygonOptions = {
   /**
-   * What color should the polygon be?
+   * Whether the polygon should have a stroked line
+   */
+  enableStroke: true,
+
+  /**
+   * What color should the polygon lines be?
    * Supports hex, rgb and rgba values
    */
-  color: 'rgba(0, 0, 200, 0.7)'
+  strokeStyle: 'rgba(50, 25, 50, 1.0)',
+
+  /**
+   * Specify distances to alternately draw a line and a gap to form
+   * a dashed or dotted line. Line will be solid if array is empty
+   */
+  lineDash: [],
+
+  /**
+   * Specify the thickness of polygon lines. The width scales with the zoom level, so the actual
+   * width in pixels is: lineWidth * zoom
+   */
+  lineWidth: 0.25,
+
+  /**
+   * Whether the polygon should be filled with a color
+   */
+  enableFill: true,
+
+  /**
+   * What color should the polygon be filled with?
+   * Supports hex, rgb and rgba values
+   */
+  fillStyle: 'rgba(0, 0, 0, 0.2)'
 };
+
+export const defaultPolygonHoverOptions = {
+  strokeStyle: 'red',
+  lineWidth: 0.5
+};
+
