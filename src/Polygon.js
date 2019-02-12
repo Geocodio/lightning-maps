@@ -97,9 +97,12 @@ export default class Polygon {
     this.calculatePolygonExtends(maxSize);
     const offscreenContext = this.createOffscreenCanvas();
 
-    offscreenContext.fillStyle = this.options.color;
-    offscreenContext.strokeStyle = this.options.color;
     offscreenContext.beginPath();
+    offscreenContext.fillStyle = this.options.fillStyle;
+    offscreenContext.strokeStyle = this.options.strokeStyle;
+    offscreenContext.lineWidth = this.options.lineWidth;
+    offscreenContext.setLineDash(this.options.lineDash);
+    offscreenContext.lineJoin = 'round';
 
     this.mapGeometry((position, index) => {
       position = [
@@ -114,8 +117,8 @@ export default class Polygon {
       }
     });
 
-    offscreenContext.fill();
-    offscreenContext.stroke();
+    if (this.options.enableStroke) offscreenContext.fill();
+    if (this.options.enableFill) offscreenContext.stroke();
   }
 
   mapGeometry(pointCallback) {
