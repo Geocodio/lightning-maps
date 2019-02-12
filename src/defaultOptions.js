@@ -100,9 +100,10 @@ export const defaultPolygonOptions = {
   lineDash: [],
 
   /**
-   * Specify the thickness of polygon lines
+   * Specify the thickness of polygon lines. The width scales with the zoom level, so the actual
+   * width in pixels is: lineWidth * zoom
    */
-  lineWidth: 2,
+  lineWidth: 0.25,
 
   /**
    * Whether the polygon should be filled with a color

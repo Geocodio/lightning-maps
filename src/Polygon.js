@@ -78,9 +78,6 @@ export default class Polygon {
       this.calculatePolygonExtends(centerOffset);
     }
 
-    const scaledWidth = this.polygonDimensions[0] * scale,
-      scaledHeight = this.polygonDimensions[1] * scale;
-
     const canvasCenter = [
       mapState.canvasDimensions[0] / 2,
       mapState.canvasDimensions[1] / 2
@@ -102,10 +99,17 @@ export default class Polygon {
       this.renderOffscreenCanvas(mapState, centerOffset, imageRect);
     }
 
+    const imageDrawPosition = [
+      mapState.moveOffset[0] - (canvasCenter[0] * (scale - 1)),
+      mapState.moveOffset[1] - (canvasCenter[1] * (scale - 1))
+    ];
+
+    const scaledWidth = this.polygonDimensions[0] * scale,
+      scaledHeight = this.polygonDimensions[1] * scale;
+
     context.drawImage(
       this.offscreenCanvas,
-      mapState.moveOffset[0] - (canvasCenter[0] * (scale - 1)),
-      mapState.moveOffset[1] - (canvasCenter[1] * (scale - 1)),
+      imageDrawPosition[0], imageDrawPosition[1],
       scaledWidth, scaledHeight
     );
   }
@@ -176,7 +180,7 @@ export default class Polygon {
     const offscreenContext = this.createOffscreenCanvas(clipRect);
 
     offscreenContext.beginPath();
-    this.applyContextStyles(offscreenContext);
+    this.applyContextStyles(offscreenContext, mapState.zoom);
 
     this.projectedGeometry.map((item) =>
       item.geometry.map((list) => {
@@ -211,10 +215,10 @@ export default class Polygon {
     if (this.options.enableFill) offscreenContext.stroke();
   }
 
-  applyContextStyles(offscreenContext) {
+  applyContextStyles(offscreenContext, zoom) {
     offscreenContext.fillStyle = this.options.fillStyle;
     offscreenContext.strokeStyle = this.options.strokeStyle;
-    offscreenContext.lineWidth = this.options.lineWidth;
+    offscreenContext.lineWidth = this.options.lineWidth * zoom;
     offscreenContext.setLineDash(this.options.lineDash);
     offscreenContext.lineJoin = 'round';
   }
