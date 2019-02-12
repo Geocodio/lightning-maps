@@ -1,17 +1,22 @@
-import { defaultPolygonOptions } from './defaultOptions';
+import { defaultPolygonOptions, defaultPolygonHoverOptions } from './defaultOptions';
 import TileConversion from './TileConversion';
 import { feature } from 'topojson-client';
 import classifyPoint from 'robust-point-in-polygon';
 
 export default class Polygon {
-  constructor(json, objectName, options = {}) {
+  constructor(json, objectName, options = {}, hoverOptions = null) {
     this._options = Object.assign({}, defaultPolygonOptions, options);
+    this._hoverOptions = Object.assign({}, defaultPolygonOptions, defaultPolygonHoverOptions, hoverOptions);
 
     this.geometry = feature(json, json.objects[objectName]);
   }
 
   get options() {
     return this._options;
+  }
+
+  get hoverOptions() {
+    return this._hoverOptions;
   }
 
   get geometry() {
@@ -78,9 +83,10 @@ export default class Polygon {
           });
         });
 
-        context.strokeStyle = 'red';
-        context.lineWidth = 0.5 * mapState.zoom;
-        context.stroke();
+        this.applyContextStyles(context, this.hoverOptions, mapState.zoom);
+
+        if (this.options.enableStroke) context.fill();
+        if (this.options.enableFill) context.stroke();
       }
 
       return isHover;
@@ -267,18 +273,18 @@ export default class Polygon {
       })
     );
 
-    this.applyContextStyles(offscreenContext, mapState.zoom);
+    this.applyContextStyles(offscreenContext, this.options, mapState.zoom);
 
     if (this.options.enableStroke) offscreenContext.fill();
     if (this.options.enableFill) offscreenContext.stroke();
   }
 
-  applyContextStyles(offscreenContext, zoom) {
-    offscreenContext.fillStyle = this.options.fillStyle;
-    offscreenContext.strokeStyle = this.options.strokeStyle;
-    offscreenContext.lineWidth = this.options.lineWidth * zoom;
-    offscreenContext.setLineDash(this.options.lineDash);
-    offscreenContext.lineJoin = 'round';
+  applyContextStyles(context, options, zoom) {
+    context.fillStyle = options.fillStyle;
+    context.strokeStyle = options.strokeStyle;
+    context.lineWidth = options.lineWidth * zoom;
+    context.setLineDash(options.lineDash);
+    context.lineJoin = 'round';
   }
 
   mapGeometry(pointCallback) {

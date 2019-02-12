@@ -110,3 +110,9 @@ export const defaultPolygonOptions = {
    */
   fillStyle: 'rgba(0, 0, 0, 0.2)'
 };
+
+export const defaultPolygonHoverOptions = {
+  strokeStyle: 'red',
+  lineWidth: 0.5
+};
+
