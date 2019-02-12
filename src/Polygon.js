@@ -57,7 +57,7 @@ export default class Polygon {
       this.renderOffscreenCanvas(mapState);
     }
 
-    const offset = [
+    const centerOffset = [
       this.polygonExtends.minX
         - (TileConversion.lon2tile(mapState.center[1], originZoom || mapState.zoom, false) * mapState.tileSize),
       this.polygonExtends.minY
@@ -67,13 +67,13 @@ export default class Polygon {
     const scaledWidth = this.polygonDimensions[0] * scale,
       scaledHeight = this.polygonDimensions[1] * scale;
 
-    const center = [
+    const canvasCenter = [
       mapState.canvasDimensions[0] / 2,
       mapState.canvasDimensions[1] / 2
     ];
 
-    const x = center[0] + mapState.moveOffset[0] + (offset[0] * scale),
-      y = center[1] + mapState.moveOffset[1] + (offset[1] * scale);
+    const x = canvasCenter[0] + mapState.moveOffset[0] + (centerOffset[0] * scale),
+      y = canvasCenter[1] + mapState.moveOffset[1] + (centerOffset[1] * scale);
 
     context.drawImage(
       this.offscreenCanvas,
