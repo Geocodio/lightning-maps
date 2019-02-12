@@ -91,23 +91,21 @@ export default class Polygon {
       canvasCenter[1] + mapState.moveOffset[1] + (this.polygonExtends.minY * scale)
     ];
 
+    const imageRect = {
+      left: Math.floor(imagePosition[0] * -1),
+      right: Math.ceil(Math.abs(imagePosition[0]) + mapState.canvasDimensions[0]),
+      top: Math.floor(imagePosition[1] * -1),
+      bottom: Math.ceil(Math.abs(imagePosition[1]) + mapState.canvasDimensions[1])
+    };
+
     if (shouldReRender) {
-      const imageRect = {
-        left: Math.floor(imagePosition[0] < 0 ? Math.abs(imagePosition[0]) : 0),
-        right: Math.ceil(Math.abs(imagePosition[0]) + mapState.canvasDimensions[0]),
-        top: Math.floor(imagePosition[1] < 0 ? Math.abs(imagePosition[1]) : 0),
-        bottom: Math.ceil(Math.abs(imagePosition[1]) + mapState.canvasDimensions[1])
-      };
-
-      // console.log(JSON.stringify(imageRect, null, 4));
-      // console.log(imagePosition);
-
       this.renderOffscreenCanvas(mapState, centerOffset, imageRect);
     }
 
     context.drawImage(
       this.offscreenCanvas,
-      imagePosition[0], imagePosition[1],
+      mapState.moveOffset[0] - (canvasCenter[0] * (scale - 1)),
+      mapState.moveOffset[1] - (canvasCenter[1] * (scale - 1)),
       scaledWidth, scaledHeight
     );
   }
@@ -125,11 +123,9 @@ export default class Polygon {
   }
 
   createOffscreenCanvas(clipRect) {
-    console.log(this.polygonDimensions, JSON.stringify(clipRect, null, 4));
-
     this.polygonDimensions = [
-      this.polygonDimensions[0] - clipRect.left,
-      this.polygonDimensions[1] - clipRect.top
+      clipRect.right - clipRect.left,
+      clipRect.bottom - clipRect.top
     ];
 
     this.offscreenCanvas = document.createElement('canvas');
@@ -179,16 +175,6 @@ export default class Polygon {
   renderOffscreenCanvas(mapState, centerOffset, clipRect) {
     const offscreenContext = this.createOffscreenCanvas(clipRect);
 
-    /*
-    offscreenContext.fillStyle = 'green';
-    offscreenContext.fillRect(
-      clipRect.left,
-      clipRect.top,
-      clipRect.right - clipRect.left,
-      clipRect.bottom - clipRect.top
-    );
-    */
-
     offscreenContext.beginPath();
     this.applyContextStyles(offscreenContext);
 
@@ -207,8 +193,8 @@ export default class Polygon {
         if (pointsInClipRect.length > 0) {
           list.map((position, index) => {
             position = [
-              position[0] - this.polygonExtends.minX + centerOffset[0],
-              position[1] - this.polygonExtends.minY + centerOffset[1]
+              position[0] - this.polygonExtends.minX + centerOffset[0] - clipRect.left,
+              position[1] - this.polygonExtends.minY + centerOffset[1] - clipRect.top
             ];
 
             if (index === 0) {
