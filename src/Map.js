@@ -25,6 +25,7 @@ export default class Map {
      */
     this.onMarkerClicked = null;
     this.onMarkerHover = null;
+    this.onPolygonHover = null;
 
     this.draw = this.draw.bind(this);
     window.requestAnimationFrame(this.draw);
@@ -486,7 +487,31 @@ export default class Map {
       }
     }
 
-    const anyItemIsHover = controlObjects.length > 0 || markers.length > 0;
+    let anyItemIsHover = controlObjects.length > 0 || markers.length > 0;
+
+    let polygons = [];
+
+    if (!anyItemIsHover) {
+      const mapState = new MapState(
+        this.options.center,
+        this.options.zoom,
+        this.state.targetZoom,
+        this.options.tileSize,
+        this.state.canvasDimensions,
+        this.state.moveOffset
+      );
+
+      polygons = this.state.polygons.map(polygon => polygon.featuresWithMouseOver(mapState, this.state.mousePosition))
+        .filter(polygon => polygon.length > 0);
+    }
+
+    if (polygons.length > 0) {
+      anyItemIsHover = true;
+
+      if (this.onPolygonHover) {
+        polygons.map(polygon => polygon.map(item => this.onPolygonHover(item)));
+      }
+    }
 
     this.canvas.style.cursor = anyItemIsHover
       ? 'pointer'

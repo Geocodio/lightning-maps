@@ -1,6 +1,7 @@
 import { defaultPolygonOptions } from './defaultOptions';
 import TileConversion from './TileConversion';
 import { feature } from 'topojson-client';
+import classifyPoint from 'robust-point-in-polygon';
 
 export default class Polygon {
   constructor(json, objectName, options = {}) {
@@ -37,6 +38,37 @@ export default class Polygon {
     this._projectedGeometryState = projectedGeometryState;
   }
 
+  featuresWithMouseOver(mapState, mousePosition) {
+    const currentlyZooming = Math.round(mapState.zoom) !== mapState.zoom;
+
+    if (!this.geometry || currentlyZooming) {
+      return [];
+    }
+
+    const canvasCenter = [
+      mapState.canvasDimensions[0] / 2,
+      mapState.canvasDimensions[1] / 2
+    ];
+
+    const originZoom = this.determineOriginZoom(mapState);
+    const centerOffset = this.calculateCenterOffset(mapState, originZoom);
+    const point = [
+      mousePosition.x - centerOffset[0] - canvasCenter[0],
+      mousePosition.y - centerOffset[1] - canvasCenter[1]
+    ];
+
+    return this.projectedGeometry.filter(item =>
+      item.geometry.filter(list => classifyPoint(list, point) === -1).length > 0
+    );
+  }
+
+  calculateCenterOffset(mapState, originZoom) {
+    return [
+      -(TileConversion.lon2tile(mapState.center[1], originZoom, false) * mapState.tileSize),
+      -(TileConversion.lat2tile(mapState.center[0], originZoom, false) * mapState.tileSize)
+    ];
+  }
+
   render(context, mapState) {
     if (!this.geometry) {
       return;
@@ -70,10 +102,7 @@ export default class Polygon {
         };
       });
 
-      centerOffset = [
-        -(TileConversion.lon2tile(mapState.center[1], originZoom, false) * mapState.tileSize),
-        -(TileConversion.lat2tile(mapState.center[0], originZoom, false) * mapState.tileSize)
-      ];
+      centerOffset = this.calculateCenterOffset(mapState, originZoom);
 
       this.calculatePolygonExtends(centerOffset);
     }
@@ -180,7 +209,7 @@ export default class Polygon {
     const offscreenContext = this.createOffscreenCanvas(clipRect);
 
     offscreenContext.beginPath();
-    this.applyContextStyles(offscreenContext, mapState.zoom);
+    offscreenContext.font = 'bold 8px helvetica';
 
     this.projectedGeometry.map((item) =>
       item.geometry.map((list) => {
@@ -202,6 +231,8 @@ export default class Polygon {
             ];
 
             if (index === 0) {
+              // offscreenContext.fillText(item.properties.NAME, position[0], position[1]);
+
               offscreenContext.moveTo(position[0], position[1]);
             } else {
               offscreenContext.lineTo(position[0], position[1]);
@@ -210,6 +241,8 @@ export default class Polygon {
         }
       })
     );
+
+    this.applyContextStyles(offscreenContext, mapState.zoom);
 
     if (this.options.enableStroke) offscreenContext.fill();
     if (this.options.enableFill) offscreenContext.stroke();
@@ -224,7 +257,7 @@ export default class Polygon {
   }
 
   mapGeometry(pointCallback) {
-    this.projectedGeometry.map((item) =>
+    return this.projectedGeometry.map((item) =>
       item.geometry.map((list) =>
         list.map(pointCallback)
       )

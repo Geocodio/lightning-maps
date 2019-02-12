@@ -22,7 +22,7 @@
       source: function (x, y, z) {
         return `https://maps.geocod.io/tiles/base/${z}/${x}/${y}.png`;
       },
-      zoom: 8,
+      zoom: 10,
       center: [37.8, -122.4]
     });
 
@@ -32,6 +32,10 @@
 
     map.onMarkerHover = function (marker) {
       console.log('You hovered ' + marker.coords.join(', '));
+    };
+
+    map.onPolygonHover = function (feature) {
+      console.log('You hovered ' + feature.properties.NAME);
     };
 
     fetch('https://gistcdn.githack.com/mpmckenna8/af23032b41f0ea1212563b523e859228/raw/0cbceeedf57d9bf2e723f57d19e923591b9249a0/schoolsca.topojson')
