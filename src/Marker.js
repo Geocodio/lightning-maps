@@ -14,6 +14,41 @@ export default class Marker {
     return this._options;
   }
 
+  get size() {
+    switch (this.options.type) {
+      case 'marker':
+        return [
+          17.698069,
+          24.786272
+        ];
+
+      case 'circle':
+        return [10, 10];
+
+      case 'donut':
+        return [14, 14];
+
+      case 'image':
+        return this.options.image
+          ? [this.options.image.width, this.options.image.height]
+          : null;
+
+      default:
+        return null;
+    }
+  }
+
+  get offset() {
+    if (this.options.type === 'marker') {
+      return [
+        0,
+        -(this.size[1] / 2)
+      ];
+    }
+
+    return [0, 0];
+  }
+
   render(context, position) {
     let renderFunction = null;
 
@@ -49,7 +84,7 @@ export default class Marker {
   renderCircle(context, position) {
     context.save();
     context.beginPath();
-    context.arc(position[0], position[1], 5, 0, 2 * Math.PI);
+    context.arc(position[0], position[1], this.size[0] / 2, 0, 2 * Math.PI);
     context.fill();
     context.restore();
   }
@@ -58,17 +93,16 @@ export default class Marker {
     context.save();
     context.beginPath();
     context.lineWidth = 5;
-    context.arc(position[0], position[1], 7, 0, 2 * Math.PI);
+    context.arc(position[0], position[1], this.size[0] / 2, 0, 2 * Math.PI);
     context.stroke();
     context.restore();
   }
 
   renderMarker(context, position) {
-    const markerWidth = 17.698069;
-    const markerHeight = 24.786272;
+    const size = this.size;
 
-    const x = position[0] - markerWidth / 2;
-    const y = position[1] - markerHeight;
+    const x = position[0] - size[0] / 2;
+    const y = position[1] - size[1];
 
     context.save();
     context.transform(0.184386, 0.000000, 0.000000, 0.184386, 0.551658 + x, 4.095760 + y);
@@ -90,10 +124,11 @@ export default class Marker {
 
   renderImage(context, position) {
     if (this.options.image) {
-      const x = position[0] - this.options.image.width / 2;
-      const y = position[1] - this.options.image.height / 2;
+      const size = this.size;
+      const x = position[0] - size[0] / 2;
+      const y = position[1] - size[1] / 2;
 
-      context.drawImage(this.options.image, x, y, this.options.image.width, this.options.image.height);
+      context.drawImage(this.options.image, x, y, size[0], size[1]);
     }
   }
 }

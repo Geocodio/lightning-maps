@@ -20,6 +20,12 @@ export default class Map {
 
     this.lastDrawState = null;
 
+    /**
+     * Events
+     */
+    this.onMarkerClicked = null;
+    this.onMarkerHover = null;
+
     this.draw = this.draw.bind(this);
     window.requestAnimationFrame(this.draw);
   }
@@ -132,12 +138,11 @@ export default class Map {
     this.canvas.addEventListener('dblclick', event => {
       event.preventDefault();
 
-      const centerX = this.state.canvasDimensions[0] / 2;
-      const centerY = this.state.canvasDimensions[1] / 2;
+      const canvasCenter = this.getCanvasCenter();
 
       this.setTargetMoveOffset(
-        -(event.clientX - centerX),
-        -(event.clientY - centerY)
+        -(event.clientX - canvasCenter[0]),
+        -(event.clientY - canvasCenter[1])
       );
 
       this.setZoom(this.options.zoom + 1);
@@ -146,7 +151,7 @@ export default class Map {
     this.canvas.addEventListener('mousedown', event => {
       event.preventDefault();
 
-      if (!this.handleControlsMouseEvent(event, 'mousedown')) {
+      if (!this.handleMouseEventInteraction(event, 'mousedown')) {
         this.state.mouseVelocities = [];
 
         this.state.dragStartPosition = [
@@ -160,7 +165,7 @@ export default class Map {
       event.preventDefault();
 
       if (!this.state.dragStartPosition) {
-        this.handleControlsMouseEvent(event, 'mouseup');
+        this.handleMouseEventInteraction(event, 'mouseup');
       } else {
         const x = -(this.state.dragStartPosition[0] - event.clientX);
         const y = -(this.state.dragStartPosition[1] - event.clientY);
@@ -218,7 +223,7 @@ export default class Map {
         this.setTargetMoveOffset(x, y, false);
         this.state.lastMouseMoveEvent = window.performance.now();
       } else {
-        this.handleControlsMouseEvent(event, 'mousemove');
+        this.handleMouseEventInteraction(event, 'mousemove');
       }
 
       return false;
@@ -380,15 +385,17 @@ export default class Map {
   }
 
   getMapBounds() {
+    const canvasCenter = this.getCanvasCenter();
+
     const nw = TileConversion.pixelToLatLon(
-      [this.state.canvasDimensions[0] / 2, (this.state.canvasDimensions[1] / 2)],
+      [canvasCenter[0], canvasCenter[1]],
       this.options.center,
       this.options.zoom,
       this.options.tileSize
     );
 
     const se = TileConversion.pixelToLatLon(
-      [-this.state.canvasDimensions[0] / 2, -(this.state.canvasDimensions[1] / 2)],
+      [-canvasCenter[0], -canvasCenter[1]],
       this.options.center,
       this.options.zoom,
       this.options.tileSize
@@ -399,18 +406,25 @@ export default class Map {
     };
   }
 
-  renderMarkers() {
+  getVisibleMarkers() {
     const bounds = this.getMapBounds();
 
-    const visibleMarkers = this.state.markers.filter(marker => {
+    return this.state.markers.filter(marker => {
       return marker.coords[0] <= bounds.nw[0] && marker.coords[0] >= bounds.se[0]
         && marker.coords[1] >= bounds.nw[1] && marker.coords[1] <= bounds.se[1];
     });
+  }
 
-    const center = [
+  getCanvasCenter() {
+    return [
       this.state.canvasDimensions[0] / 2,
       this.state.canvasDimensions[1] / 2
     ];
+  }
+
+  renderMarkers() {
+    const visibleMarkers = this.getVisibleMarkers();
+    const canvasCenter = this.getCanvasCenter();
 
     visibleMarkers.map(marker => {
       const position = TileConversion.latLonToPixel(
@@ -421,8 +435,8 @@ export default class Map {
       );
 
       marker.render(this.context, [
-        center[0] - position[0] + this.state.moveOffset[0],
-        center[1] - position[1] + this.state.moveOffset[1]
+        canvasCenter[0] - position[0] + this.state.moveOffset[0],
+        canvasCenter[1] - position[1] + this.state.moveOffset[1]
       ]);
     });
   }
@@ -442,16 +456,20 @@ export default class Map {
     });
   }
 
-  handleControlsMouseEvent(event, name) {
+  handleMouseEventInteraction(event, name) {
     this.state.mousePosition = {
       x: event.clientX,
       y: event.clientY
     };
 
-    const bounds = this.getControlsBounds();
+    const controlsBounds = this.getControlsBounds();
 
-    const zoomInHover = this.isMouseOverObject(bounds.zoomIn);
-    const zoomOutHover = this.isMouseOverObject(bounds.zoomOut);
+    const zoomInHover = this.isMouseOverObject(controlsBounds.zoomIn);
+    const zoomOutHover = this.isMouseOverObject(controlsBounds.zoomOut);
+
+    const hoveredMarkers = (this.onMarkerClicked || this.onMarkerHover)
+      ? this.getMarkersBounds().filter(item => this.isMouseOverObject(item.bounds))
+      : [];
 
     if (name === 'mouseup') {
       if (zoomInHover) {
@@ -459,13 +477,23 @@ export default class Map {
       } else if (zoomOutHover) {
         this.setZoom(this.options.zoom - 1);
       }
+
+      if (this.onMarkerClicked) {
+        hoveredMarkers.map(item => this.onMarkerClicked(item.marker));
+      }
+    } else {
+      if (this.onMarkerHover) {
+        hoveredMarkers.map(item => this.onMarkerHover(item.marker));
+      }
     }
 
-    const anyControlIsHover = zoomInHover || zoomOutHover;
+    const anyItemIsHover = zoomInHover || zoomOutHover || hoveredMarkers.length > 0;
 
-    this.canvas.style.cursor = anyControlIsHover ? 'pointer' : 'grab';
+    this.canvas.style.cursor = anyItemIsHover
+      ? 'pointer'
+      : 'grab';
 
-    return anyControlIsHover;
+    return anyItemIsHover;
   }
 
   getControlsBounds() {
@@ -486,6 +514,33 @@ export default class Map {
         height: size
       }
     };
+  }
+
+  getMarkersBounds() {
+    const visibleMarkers = this.getVisibleMarkers();
+    const canvasCenter = this.getCanvasCenter();
+
+    return visibleMarkers.map(marker => {
+      const position = TileConversion.latLonToPixel(
+        marker.coords,
+        this.options.center,
+        this.options.zoom,
+        this.options.tileSize
+      );
+
+      const markerSize = marker.size;
+      const markerOffset = marker.offset;
+
+      return {
+        bounds: {
+          x: canvasCenter[0] - position[0] + this.state.moveOffset[0] - (markerSize[0] / 2) + markerOffset[0],
+          y: canvasCenter[1] - position[1] + this.state.moveOffset[1] - (markerSize[1] / 2) + markerOffset[1],
+          width: markerSize[0],
+          height: markerSize[1]
+        },
+        marker
+      };
+    });
   }
 
   renderControls() {

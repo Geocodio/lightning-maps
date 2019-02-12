@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Lightning Maps</title>
+    <style type="text/css">
+    html, body {
+      margin: 0;
+    }
+    </style>
+  </head>
+  <body>
+    <canvas id="map" width="800" height="600"></canvas>
+    <script src="LightningMaps.js"></script>
+    <script>
+    var canvas = document.getElementById('map');
+    canvas.width = document.documentElement.clientWidth;
+    canvas.height = document.documentElement.clientHeight;
+
+    var map = new LightningMaps.Map(canvas, {
+      source: function (x, y, z) {
+        return `https://maps.geocod.io/tiles/base/${z}/${x}/${y}.png`;
+      },
+      zoom: 8,
+      center: [37.8, -122.4]
+    });
+
+    map.onMarkerClicked = function (marker) {
+      alert('You clicked ' + marker.coords.join(', '));
+    };
+
+    map.onMarkerHover = function (marker) {
+      console.log('You hovered ' + marker.coords.join(', '));
+    };
+
+    fetch('https://gistcdn.githack.com/mpmckenna8/af23032b41f0ea1212563b523e859228/raw/0cbceeedf57d9bf2e723f57d19e923591b9249a0/schoolsca.topojson')
+      .then(response => response.json())
+      .then(json => {
+        map.addPolygon(new LightningMaps.Polygon(json, 'caschools'));
+      })
+      .catch(err => console.log(`Could not load ${this._sourceUrl}: ${err.message || err}`));
+
+    map.addMarker(new LightningMaps.Marker([37.8, -122.4]));
+    map.addMarker(new LightningMaps.Marker([37.7, -122.4], { type: 'circle' }));
+
+    var markerIcon = new Image(16, 13);
+    markerIcon.src = 'https://unpkg.com/svg-icon@0.8.2/dist/trimmed-svg/metro/camera.svg';
+
+    markerIcon.onload = function () {
+      map.addMarker(new LightningMaps.Marker([37.8, -122.2], { image: markerIcon, type: 'image' }));
+    };
+    </script>
+  </body>
+</html>
