@@ -138,12 +138,13 @@ export default class Map {
 
     this.canvas.addEventListener('dblclick', event => {
       event.preventDefault();
+      this.updateMousePosition(event);
 
       const canvasCenter = this.getCanvasCenter();
 
       this.setTargetMoveOffset(
-        -(event.clientX - canvasCenter[0]),
-        -(event.clientY - canvasCenter[1])
+        -(this.state.mousePosition.x - canvasCenter[0]),
+        -(this.state.mousePosition.y - canvasCenter[1])
       );
 
       this.setZoom(this.options.zoom + 1);
@@ -151,25 +152,27 @@ export default class Map {
 
     this.canvas.addEventListener('mousedown', event => {
       event.preventDefault();
+      this.updateMousePosition(event);
 
       if (!this.handleMouseEventInteraction(event, 'mousedown')) {
         this.state.mouseVelocities = [];
 
         this.state.dragStartPosition = [
-          event.clientX - this.state.moveOffset[0],
-          event.clientY - this.state.moveOffset[1]
+          this.state.mousePosition.x - this.state.moveOffset[0],
+          this.state.mousePosition.y - this.state.moveOffset[1]
         ];
       }
     });
 
     this.canvas.addEventListener('mouseup', event => {
       event.preventDefault();
+      this.updateMousePosition(event);
 
       if (!this.state.dragStartPosition) {
         this.handleMouseEventInteraction(event, 'mouseup');
       } else {
-        const x = -(this.state.dragStartPosition[0] - event.clientX);
-        const y = -(this.state.dragStartPosition[1] - event.clientY);
+        const x = -(this.state.dragStartPosition[0] - this.state.mousePosition.x);
+        const y = -(this.state.dragStartPosition[1] - this.state.mousePosition.y);
 
         if (this.state.moveOffset[0] !== 0 || this.state.moveOffset[1] !== 0) {
           const now = window.performance.now();
@@ -207,10 +210,11 @@ export default class Map {
 
     this.canvas.addEventListener('mousemove', event => {
       event.preventDefault();
+      this.updateMousePosition(event);
 
       if (this.state.dragStartPosition) {
-        const x = -(this.state.dragStartPosition[0] - event.clientX);
-        const y = -(this.state.dragStartPosition[1] - event.clientY);
+        const x = -(this.state.dragStartPosition[0] - this.state.mousePosition.x);
+        const y = -(this.state.dragStartPosition[1] - this.state.mousePosition.y);
 
         const now = window.performance.now();
 
@@ -229,6 +233,15 @@ export default class Map {
 
       return false;
     });
+  }
+
+  updateMousePosition(event) {
+    const rect = this.canvas.getBoundingClientRect();
+
+    this.state.mousePosition = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    };
   }
 
   easeOutQuad(time) {
@@ -459,11 +472,6 @@ export default class Map {
   }
 
   handleMouseEventInteraction(event, name) {
-    this.state.mousePosition = {
-      x: event.clientX,
-      y: event.clientY
-    };
-
     const controlObjects = this.getControlObjects().filter(item => this.isMouseOverObject(item.bounds));
 
     const markers = controlObjects.length <= 0 && (this.onMarkerClicked || this.onMarkerHover)
@@ -503,7 +511,7 @@ export default class Map {
       );
 
       polygons = this.state.polygons.map(polygon =>
-        polygon.handleMouseOver(this.context, mapState, this.state.mousePosition)
+        polygon.handleMouseOver(null, mapState, this.state.mousePosition)
       ).filter(polygon => polygon.length > 0);
     }
 

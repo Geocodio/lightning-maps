@@ -81,7 +81,7 @@ export default class Polygon {
     return this.projectedGeometry.filter(item => {
       const isHover = item.geometry.filter(list => classifyPoint(list, point) === -1).length > 0;
 
-      if (isHover) {
+      if (isHover && context) {
         context.beginPath();
 
         item.geometry.map((list) => {
