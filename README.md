@@ -23,7 +23,7 @@ yarn add lightning-maps
 Or link directly to our build via the [unpkg](https://unpkg.com) CDN:
 
 ```html
-<script src="https://unpkg.com/lightning-maps@0.0.8/lib/LightningMaps.min.js"></script>
+<script src="https://unpkg.com/lightning-maps@0.0.9/lib/LightningMaps.min.js"></script>
 ```
 
 ### 2. Create a `<canvas>` element
