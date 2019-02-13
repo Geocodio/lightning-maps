@@ -11,7 +11,7 @@ layout: default
 [![Map with markers](screenshots/markers.png)](markers.html)
 
 ## [External controls](controls.html)
-[![External controls](screenshots/simple.png)](controls.html)
+[![External controls](screenshots/controls.png)](controls.html)
 
 ## [Polygons](polygons.html)
-[![Polygons](screenshots/simple.png)](polygons.html)
+[![Polygons](screenshots/polygons.png)](polygons.html)
