@@ -5,8 +5,8 @@
   "scripts": {
     "build": "webpack --env dev && webpack --env build && cp lib/LightningMaps.min.js docs/LightningMaps.js && npm run test",
     "dev": "rm -f docs/LightningMaps.js && webpack-dev-server --progress --colors --watch --env dev",
-    "test": "mocha --require babel-register --colors ./test/*.spec.js",
-    "test:watch": "mocha --require babel-register --colors -w ./test/*.spec.js",
+    "test": "mocha --compilers js:@babel/register --colors ./test/*.spec.js",
+    "test:watch": "mocha --compilers js:@babel/register --colors -w ./test/*.spec.js",
     "bump": "npx standard-version"
   },
   "repository": {
@@ -30,6 +30,7 @@
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.2.2",
     "@babel/preset-env": "^7.3.1",
+    "@babel/register": "^7.0.0",
     "babel-eslint": "^10.0.1",
     "babel-loader": "^8.0.5",
     "chai": "^4.1.2",
