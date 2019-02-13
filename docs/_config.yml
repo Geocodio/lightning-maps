@@ -1,4 +1,4 @@
 theme: jekyll-theme-cayman
 title: Lightning Maps
-description: Lightweight, dependency-free slippy map renderer
+description: A fast, lightweight slippy map renderer with very minimal dependencies
 show_downloads: false
