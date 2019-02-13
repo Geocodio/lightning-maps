@@ -18,4 +18,3 @@ layout: default
 
 ## [External controls](controls.html)
 [![External controls](screenshots/controls.png)](controls.html)
-
