@@ -70,9 +70,23 @@ export const defaultMarkerOptions = {
   color: 'rgba(0, 0, 200, 0.7)',
 
   /**
-   * Valid values: marker, circle, donut
+   * Valid values: marker, circle, donut, image
    */
-  type: 'marker'
+  type: 'marker',
+
+  /**
+   * Image object for the rendered icon
+   * Note: Only used for markers with the "image" type
+   */
+  image: null,
+
+  /**
+   * Horizontal and vertical offset.
+   * When the offset is set to [0,0], the image is centered horizontally and vertically.
+   * You might for example want add a vertical offset to teardrop-shaped marker icons
+   * Note: Only used for markers with the "image" type
+   */
+  offset: [0, 0]
 };
 
 export const defaultPolygonOptions = {

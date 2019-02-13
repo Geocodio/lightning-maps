@@ -39,14 +39,19 @@ export default class Marker {
   }
 
   get offset() {
-    if (this.options.type === 'marker') {
-      return [
-        0,
-        -(this.size[1] / 2)
-      ];
-    }
+    switch (this.options.type) {
+      case 'marker':
+        return [
+          0,
+          -(this.size[1] / 2)
+        ];
 
-    return [0, 0];
+      case 'image':
+        return this.options.offset;
+
+      default:
+        return [0, 0];
+    }
   }
 
   render(context, position) {
