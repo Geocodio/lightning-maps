@@ -1,28 +1,29 @@
 # Lightning Maps (*Alpha release*)
 
-A lightweight, minimal-dependecy slippy map renderer.
+A fast, lightweight slippy map renderer with very minimal dependencies.
 
 Heavily inspired by [Pigeon Maps](https://github.com/mariusandra/pigeon-maps) and [Leaflet](https://leafletjs.com), but with slightly different goals in mind:
 
 ## Goals
 
 * Modern, built using ES6+ syntax
-* Lightweight, [minimal dependencies](https://github.com/Geocodio/lightning-maps/blob/master/package.json#L28) with a [minified bundle](https://raw.githubusercontent.com/Geocodio/lightning-maps/master/lib/LightningMaps.min.js) of less than 20kb
+* Lightweight, minimal dependencies
 * Ability to render thousands of markers, by using `<canvas>` rendering instead of depending on the DOM
-* Wrappers for React and VueJS (Coming soon)
+* Supports rendering of complex polygons
+* Wrapper for React (VueJS coming soon)
 
 ## Using
 
 ### 1. Install
 
 ```
-npm install --save npm lightning-maps
+yarn add lightning-maps
 ```
 
 Or link directly to our build via the [unpkg](https://unpkg.com) CDN:
 
 ```html
-<script src="https://unpkg.com/lightning-maps@0.0.1/lib/LightningMaps.min.js"></script>
+<script src="https://unpkg.com/lightning-maps@0.0.7/lib/LightningMaps.min.js"></script>
 ```
 
 ### 2. Create a `<canvas>` element
@@ -54,17 +55,18 @@ map.addMarker(new LightningMaps.Marker([38.882666, -77.170150]))
 ### Run local development build and tests
 
 ```bash
-npm run dev
-npm run test:watch
+yarn run dev
+yarn run test:watch
 ```
 
 ### Development urls:
 * [http://localhost:8080/simple.html](http://localhost:8080/simple.html)
 * [http://localhost:8080/markers.html](http://localhost:8080/markers.html)
 * [http://localhost:8080/polygons.html](http://localhost:8080/polygons.html)
+* [http://localhost:8080/events.html](http://localhost:8080/events.html)
 
 ### Build library for distribution
 
 ```bash
-npm run build
+yarn run build
 ```
