@@ -7,6 +7,15 @@ export default class Polygon {
   constructor(json, objectName, options = {}, hoverOptions = null) {
     this._options = Object.assign({}, defaultPolygonOptions, options);
     this._hoverOptions = Object.assign({}, defaultPolygonOptions, defaultPolygonHoverOptions, hoverOptions);
+    this.globalIndex = this.prepareGlobalDataObject();
+
+    if (!objectName) {
+      objectName = Object.keys(json.objects)[0];
+    }
+
+    if (!(objectName in json.objects)) {
+      throw new Error(`Invalid object name, valid options are: ${Object.keys(json.objects).join(', ')}`);
+    }
 
     this.geometry = feature(json, json.objects[objectName]);
   }
@@ -20,27 +29,34 @@ export default class Polygon {
   }
 
   get geometry() {
-    return window._geometry;
+    return window.lightningMapsPolygons[this.globalIndex].geometry;
   }
 
   set geometry(geometry) {
-    window._geometry = geometry;
+    window.lightningMapsPolygons[this.globalIndex].geometry = geometry;
   }
 
   get projectedGeometry() {
-    return window._projectedGeometry;
+    return window.lightningMapsPolygons[this.globalIndex].projectedGeometry;
   }
 
   set projectedGeometry(projectedGeometry) {
-    window._projectedGeometry = projectedGeometry;
+    window.lightningMapsPolygons[this.globalIndex].projectedGeometry = projectedGeometry;
   }
 
-  get projectedGeometryState() {
-    return this._projectedGeometryState;
-  }
+  prepareGlobalDataObject() {
+    if (!('lightningMapsPolygons' in window)) {
+      window.lightningMapsPolygons = [];
+    }
 
-  set projectedGeometryState(projectedGeometryState) {
-    this._projectedGeometryState = projectedGeometryState;
+    const index = window.lightningMapsPolygons.length;
+
+    window.lightningMapsPolygons[index] = {
+      geometry: null,
+      projectedGeometry: null
+    };
+
+    return index;
   }
 
   handleMouseOver(context, mapState, mousePosition) {
@@ -296,14 +312,16 @@ export default class Polygon {
   }
 
   projectGeometry(geometry, mapState) {
-    switch (geometry.type) {
-      case 'Polygon':
-        return [geometry.coordinates[0].map(item => this.projectPoint(mapState, item[0], item[1]))];
+    if (geometry) {
+      switch (geometry.type) {
+        case 'Polygon':
+          return [geometry.coordinates[0].map(item => this.projectPoint(mapState, item[0], item[1]))];
 
-      case 'MultiPolygon':
-        return geometry.coordinates.map(coordinates =>
-          coordinates[0].map(item => this.projectPoint(mapState, item[0], item[1]))
-        );
+        case 'MultiPolygon':
+          return geometry.coordinates.map(coordinates =>
+            coordinates[0].map(item => this.projectPoint(mapState, item[0], item[1]))
+          );
+      }
     }
 
     return [];

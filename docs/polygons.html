@@ -31,7 +31,7 @@
       .then(json => {
         map.addPolygon(new LightningMaps.Polygon(json, 'caschools'));
       })
-      .catch(err => console.log(`Could not load ${this._sourceUrl}: ${err.message || err}`));
+      .catch(err => console.log(`Could not load polygon: ${err.message || err}`));
 
     map.addMarker(new LightningMaps.Marker([37.8, -122.4]));
     </script>
