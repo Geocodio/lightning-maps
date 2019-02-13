@@ -14,8 +14,11 @@ Marker.defaultProps = {
 
 Marker.propTypes = {
   position: PropTypes.arrayOf(PropTypes.number.isRequired).isRequired,
-  type: PropTypes.oneOf(['marker', 'circle', 'donut']),
-  color: PropTypes.string
+  type: PropTypes.oneOf(['marker', 'circle', 'donut', 'image']),
+  color: PropTypes.string,
+  imageUrl: PropTypes.string,
+  width: PropTypes.number,
+  height: PropTypes.number
 }
 
 export default Marker

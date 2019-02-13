@@ -16,7 +16,7 @@ Heavily inspired by [Pigeon Maps](https://github.com/mariusandra/pigeon-maps) an
 ## Installation & Usage
 
 ```bash
-npm install --save lightning-maps-react
+yarn add lightning-maps-react
 ```
 
 ### Include the Component

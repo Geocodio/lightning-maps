@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import './App.css'
 
 import { Map, Marker, Polygon } from '@src'
 
@@ -18,7 +17,12 @@ class App extends Component {
           <Marker position={[34.91, -84.24]} color='rgba(200, 0, 0, 0.7)' />
           <Marker position={[35.1, -77.19]} color='rgba(0, 0, 0, 0.7)' type='circle' />
           <Marker position={[38.86, -89.16]} color='rgba(0, 200, 200, 0.7)' type='donut' />
-          <Polygon sourceUrl='https://raw.githubusercontent.com/deldersveld/topojson/master/continents/north-america.json' color='red' />
+          <Marker position={[38.22, -86.25]} imageUrl='https://unpkg.com/svg-icon@0.8.2/dist/trimmed-svg/metro/camera.svg' width={16} height={13} type='image' />
+          <Polygon
+            sourceUrl='https://raw.githubusercontent.com/deldersveld/topojson/master/continents/north-america.json'
+            objectName='continent_North_America_subunits'
+            options={{ fillStyle: 'rgba(255, 0, 0, 0.25)' }}
+          />
         </Map>
       </div>
     )

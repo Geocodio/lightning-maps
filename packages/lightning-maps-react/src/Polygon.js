@@ -7,13 +7,11 @@ class Polygon extends Component {
   }
 }
 
-Polygon.defaultProps = {
-  color: 'black'
-}
-
 Polygon.propTypes = {
   sourceUrl: PropTypes.string.isRequired,
-  color: PropTypes.string
+  objectName: PropTypes.string,
+  options: PropTypes.object,
+  hoverOptions: PropTypes.object
 }
 
 export default Polygon

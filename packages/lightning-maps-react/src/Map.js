@@ -1,8 +1,12 @@
+/* global fetch, Image */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import Marker from './Marker'
 import Polygon from './Polygon'
 import * as LightningMap from 'lightning-maps'
+
+const DEFAULT_IMAGE_WIDTH = 32
+const DEFAULT_IMAGE_HEIGHT = 32
 
 class Map extends Component {
   constructor (props) {
@@ -10,6 +14,11 @@ class Map extends Component {
 
     this.lightningMap = null
     this.canvasRef = React.createRef()
+
+    this.state = {
+      polygons: {},
+      markerImages: {}
+    }
   }
 
   componentDidMount () {
@@ -40,27 +49,87 @@ class Map extends Component {
       return
     }
 
-    // TODO: Don't add markers that were already added
+    this.renderMarkers(children, lightningMap)
+    this.renderPolygons(children, lightningMap)
+  }
 
-    children
-      .filter(Component => {
-        return Component && Component.type === Marker
-      })
+  renderMarkers (children, lightningMap) {
+    if (this.props.markers && this.props.markers.length > 0) {
+      const markers = this.props.markers.map(item => new LightningMap.Marker(item.coords, item.options || {}))
+      lightningMap.setMarkers(markers)
+    } else {
+      const markers = children
+        .filter(Component => Component && Component.type === Marker)
+        .map(Component => {
+          const props = Object.assign({}, Component.props)
+
+          if (props.type === 'image' && props.imageUrl) {
+            if (!(props.imageUrl in this.state.markerImages)) {
+              this.setState({
+                markerImages: {
+                  ...this.state.markerImages,
+                  [props.imageUrl]: null
+                }
+              })
+
+              const markerIcon = new Image(props.width || DEFAULT_IMAGE_WIDTH, props.height || DEFAULT_IMAGE_HEIGHT)
+              markerIcon.src = props.imageUrl
+
+              markerIcon.onload = () => {
+                this.setState({
+                  markerImages: {
+                    ...this.state.markerImages,
+                    [props.imageUrl]: markerIcon
+                  }
+                })
+              }
+
+              return null
+            } else {
+              props.image = this.state.markerImages[props.imageUrl]
+            }
+          }
+
+          return new LightningMap.Marker(props.position, props)
+        })
+        .filter(marker => marker !== null)
+
+      lightningMap.setMarkers(markers)
+    }
+  }
+
+  renderPolygons (children, lightningMap) {
+    const polygons = children
+      .filter(Component => Component && Component.type === Polygon)
       .map(Component => {
-        const marker = new LightningMap.Marker(Component.props.position, Component.props)
+        const props = Component.props
 
-        lightningMap.addMarker(marker)
-      })
+        if (!(props.sourceUrl in this.state.polygons)) {
+          this.setState({
+            polygons: {
+              ...this.state.polygons,
+              [props.sourceUrl]: null
+            }
+          })
 
-    children
-      .filter(Component => {
-        return Component && Component.type === Polygon
-      })
-      .map(Component => {
-        const polygon = new LightningMap.Polygon(Component.props.sourceUrl, Component.props)
+          fetch(props.sourceUrl)
+            .then(response => response.json())
+            .then(json => {
+              this.setState({
+                polygons: {
+                  ...this.state.polygons,
+                  [props.sourceUrl]: new LightningMap.Polygon(json, props.objectName, props.options, props.hoverOptions)
+                }
+              })
+            })
+            .catch(err => console.log(`Could not load ${props.sourceUrl}: ${err.message || err}`))
+        }
 
-        lightningMap.addPolygon(polygon)
+        return this.state.polygons[Component.props.sourceUrl]
       })
+      .filter(polygon => polygon !== null)
+
+    lightningMap.setPolygons(polygons)
   }
 
   getMapOptions () {
@@ -89,7 +158,8 @@ Map.propTypes = {
   source: PropTypes.func.isRequired,
   zoom: PropTypes.number.isRequired,
   center: PropTypes.arrayOf(PropTypes.number.isRequired).isRequired,
-  children: PropTypes.oneOfType([PropTypes.object, PropTypes.array])
+  children: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+  markers: PropTypes.array
 }
 
 export default Map
