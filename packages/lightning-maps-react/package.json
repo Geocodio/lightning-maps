@@ -1,18 +1,18 @@
 {
   "name": "lightning-maps-react",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "main": "dist/build.js",
   "scripts": {
     "build": "npm run clean && webpack",
     "clean": "rimraf dist",
-    "clean:examples": "rimraf examples/dist",
-    "examples": "npm run clean:examples && webpack-dev-server --config examples/webpack.config.js --mode development",
+    "clean:dev": "rimraf examples/dist",
+    "dev": "npm run clean:dev && webpack-dev-server --config examples/webpack.config.js --mode development",
     "test": "npm run standard",
     "standard": "standard \"**/*.js\"",
     "bump": "npx standard-version"
   },
   "dependencies": {
-    "lightning-maps": "0.0.6",
+    "lightning-maps": "0.0.10",
     "react": "^16.7.0",
     "react-dom": "^16.7.0"
   },
