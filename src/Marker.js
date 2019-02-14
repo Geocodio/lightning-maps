@@ -130,8 +130,8 @@ export default class Marker {
   renderImage(context, position) {
     if (this.options.image) {
       const size = this.size;
-      const x = position[0] - size[0] / 2;
-      const y = position[1] - size[1] / 2;
+      const x = position[0] - size[0] / 2 + this.offset[0];
+      const y = position[1] - size[1] / 2 + this.offset[1];
 
       context.drawImage(this.options.image, x, y, size[0], size[1]);
     }
