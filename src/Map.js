@@ -52,7 +52,8 @@ export default class Map {
       tileLayers: [
         new TileLayer(this)
       ],
-      mousePosition: { x: 0, y: 0}
+      mousePosition: { x: 0, y: 0},
+      forceRedraw: false
     };
   }
 
@@ -358,6 +359,12 @@ export default class Map {
   }
 
   shouldRedraw() {
+    if (this.state.forceRedraw) {
+      this.state.forceRedraw = false;
+
+      return true;
+    }
+
     const drawState = JSON.stringify([this.state, this.options]);
 
     if (this.lastDrawState !== drawState) {
@@ -662,6 +669,7 @@ export default class Map {
 
   setMarkers(markers) {
     this.state.markers = markers;
+    this.state.forceRedraw = true;
   }
 
   addPolygon(polygon) {
