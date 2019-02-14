@@ -56,6 +56,7 @@ class Map extends Component {
   renderMarkers (children, lightningMap) {
     if (this.props.markers && this.props.markers.length > 0) {
       const markers = this.props.markers.map(item => new LightningMap.Marker(item.coords, item.options || {}))
+
       lightningMap.setMarkers(markers)
     } else {
       const markers = children

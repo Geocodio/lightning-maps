@@ -1,5 +1,5 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import App from './App'
+import AppPerformance from './AppPerformance'
 
-ReactDOM.render(<App />, document.getElementById('root'))
+ReactDOM.render(<AppPerformance />, document.getElementById('root'))
