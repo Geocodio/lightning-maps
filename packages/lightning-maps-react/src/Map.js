@@ -113,6 +113,7 @@ class Map extends Component {
             }
           })
 
+          // TODO: Fetch should be called from componentDidUpdate(...) instead to avoid state changes during render
           fetch(props.sourceUrl)
             .then(response => response.json())
             .then(json => {
