@@ -4138,10 +4138,10 @@ lightercollective@^0.1.0:
   resolved "https://registry.yarnpkg.com/lightercollective/-/lightercollective-0.1.0.tgz#70df102c530dcb8d0ccabfe6175a8d00d5f61300"
   integrity sha512-J9tg5uraYoQKaWbmrzDDexbG6hHnMcWS1qLYgJSWE+mpA3U5OCSeMUhb+K55otgZJ34oFdR0ECvdIb3xuO5JOQ==
 
-lightning-maps@0.0.*:
-  version "0.0.13"
-  resolved "https://registry.yarnpkg.com/lightning-maps/-/lightning-maps-0.0.13.tgz#9313c5bbff07f6614d9cdd8fcfb284eab1ab15ee"
-  integrity sha512-9A4ksH9TNd1oxZCB5zYXj9Hf42/i1ph4ecbXkd1h1rJN4eJTCCywRofppYhv9aZzBoujUKZLN8r3SX+/21DR2g==
+lightning-maps@~0.0.10:
+  version "0.0.14"
+  resolved "https://registry.yarnpkg.com/lightning-maps/-/lightning-maps-0.0.14.tgz#a926d91662807a18b247e8dc7d7a9750bd26f9f3"
+  integrity sha512-hMqW6CC4EdAPVFdqxL64okgFlJo+Vbh88X9ya2HJgV8nOiTPWfImjcZcHZHPkDDEXJteE703sTPnnj++s3N8vw==
   dependencies:
     robust-point-in-polygon "^1.0.3"
     topojson-client "^3.0.0"
