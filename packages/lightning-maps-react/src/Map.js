@@ -33,6 +33,10 @@ class Map extends Component {
 
   initLightningMap () {
     this.lightningMap = new LightningMap.Map(this.canvasRef.current, this.getMapOptions())
+    this.lightningMap.onMarkerClicked = this.props.onMarkerClicked || null
+    this.lightningMap.onMarkerHover = this.props.onMarkerHover || null
+    this.lightningMap.onPolygonHover = this.props.onPolygonHover || null
+
     this.renderChildren()
   }
 
