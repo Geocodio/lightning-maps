@@ -236,6 +236,10 @@ export default class Map {
     });
   }
 
+  isCurrentlyDraggingMap() {
+    return this.state.dragStartPosition !== null;
+  }
+
   updateMousePosition(event) {
     const rect = this.canvas.getBoundingClientRect();
 
@@ -474,7 +478,10 @@ export default class Map {
 
     this.state.polygons.map(polygon => {
       polygon.render(this.context, mapState);
-      polygon.handleMouseOver(this.context, mapState, this.state.mousePosition);
+
+      if (!this.isCurrentlyDraggingMap() && this.onPolygonHover) {
+        polygon.handleMouseOver(this.context, mapState, this.state.mousePosition);
+      }
     });
   }
 
@@ -503,38 +510,42 @@ export default class Map {
       }
     }
 
-    let anyItemIsHover = controlObjects.length > 0 || markers.length > 0;
+    let controlsOrMarkersIsHover = controlObjects.length > 0 || markers.length > 0;
 
-    let polygons = [];
+    let polygonIsHover = false;
 
-    if (!anyItemIsHover) {
-      const mapState = new MapState(
-        this.options.center,
-        this.options.zoom,
-        this.state.targetZoom,
-        this.options.tileSize,
-        this.state.canvasDimensions,
-        this.state.moveOffset
-      );
+    if (this.onPolygonHover) {
+      let polygons = [];
 
-      polygons = this.state.polygons.map(polygon =>
-        polygon.handleMouseOver(null, mapState, this.state.mousePosition)
-      ).filter(polygon => polygon.length > 0);
-    }
+      if (!controlsOrMarkersIsHover && !this.isCurrentlyDraggingMap()) {
+        const mapState = new MapState(
+          this.options.center,
+          this.options.zoom,
+          this.state.targetZoom,
+          this.options.tileSize,
+          this.state.canvasDimensions,
+          this.state.moveOffset
+        );
 
-    if (polygons.length > 0) {
-      anyItemIsHover = true;
+        polygons = this.state.polygons.map(polygon =>
+          polygon.handleMouseOver(null, mapState, this.state.mousePosition)
+        ).filter(polygon => polygon.length > 0);
+      }
 
-      if (this.onPolygonHover) {
+      polygonIsHover = polygons.length > 0;
+
+      if (polygonIsHover) {
         polygons.map(polygon => polygon.map(item => this.onPolygonHover(item)));
       }
     }
 
-    this.canvas.style.cursor = anyItemIsHover
+    this.canvas.style.cursor = controlsOrMarkersIsHover || polygonIsHover
       ? 'pointer'
       : 'grab';
 
-    return anyItemIsHover;
+    // Let caller know if controls or markers were interacted with. This will prevent further
+    // mouse interactions from being triggered
+    return controlsOrMarkersIsHover;
   }
 
   getControlObjects() {
