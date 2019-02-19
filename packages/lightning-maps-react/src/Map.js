@@ -22,19 +22,25 @@ class Map extends Component {
   }
 
   componentDidMount () {
-    this.lightningMap = new LightningMap.Map(this.canvasRef.current, this.getMapOptions())
-    this.renderChildren()
+    this.initLightningMap()
   }
 
   componentDidUpdate (prevProps, prevState, snapshot) {
-    // console.log(prevProps);
+    if (this.props.width !== prevProps.width || this.props.height !== prevProps.height) {
+      this.initLightningMap()
+    }
+  }
+
+  initLightningMap () {
+    this.lightningMap = new LightningMap.Map(this.canvasRef.current, this.getMapOptions())
+    this.renderChildren()
   }
 
   render () {
     this.renderChildren()
 
     return (
-      <canvas ref={this.canvasRef} {...this.getCanvasProps()} />
+      <canvas key={this.props.width + '/' + this.props.height} ref={this.canvasRef} {...this.getCanvasProps()} />
     )
   }
 
@@ -100,38 +106,44 @@ class Map extends Component {
   }
 
   renderPolygons (children, lightningMap) {
-    const polygons = children
-      .filter(Component => Component && Component.type === Polygon)
-      .map(Component => {
-        const props = Component.props
+    if (this.props.polygons && this.props.polygons.length > 0) {
+      const polygons = this.props.polygons.map(item => new LightningMap.Polygon(item.json, item.objectName || null, item.options || {}, item.hoverOptions || {}))
 
-        if (!(props.sourceUrl in this.state.polygons)) {
-          this.setState({
-            polygons: {
-              ...this.state.polygons,
-              [props.sourceUrl]: null
-            }
-          })
+      lightningMap.setPolygons(polygons)
+    } else {
+      const polygons = children
+        .filter(Component => Component && Component.type === Polygon)
+        .map(Component => {
+          const props = Component.props
 
-          // TODO: Fetch should be called from componentDidUpdate(...) instead to avoid state changes during render
-          fetch(props.sourceUrl)
-            .then(response => response.json())
-            .then(json => {
-              this.setState({
-                polygons: {
-                  ...this.state.polygons,
-                  [props.sourceUrl]: new LightningMap.Polygon(json, props.objectName, props.options, props.hoverOptions)
-                }
-              })
+          if (!(props.sourceUrl in this.state.polygons)) {
+            this.setState({
+              polygons: {
+                ...this.state.polygons,
+                [props.sourceUrl]: null
+              }
             })
-            .catch(err => console.log(`Could not load ${props.sourceUrl}: ${err.message || err}`))
-        }
 
-        return this.state.polygons[Component.props.sourceUrl]
-      })
-      .filter(polygon => polygon !== null)
+            // TODO: Fetch should be called from componentDidUpdate(...) instead to avoid state changes during render
+            fetch(props.sourceUrl)
+              .then(response => response.json())
+              .then(json => {
+                this.setState({
+                  polygons: {
+                    ...this.state.polygons,
+                    [props.sourceUrl]: new LightningMap.Polygon(json, props.objectName, props.options, props.hoverOptions)
+                  }
+                })
+              })
+              .catch(err => console.log(`Could not load ${props.sourceUrl}: ${err.message || err}`))
+          }
 
-    lightningMap.setPolygons(polygons)
+          return this.state.polygons[Component.props.sourceUrl]
+        })
+        .filter(polygon => polygon !== null)
+
+      lightningMap.setPolygons(polygons)
+    }
   }
 
   getMapOptions () {
@@ -161,7 +173,8 @@ Map.propTypes = {
   zoom: PropTypes.number.isRequired,
   center: PropTypes.arrayOf(PropTypes.number.isRequired).isRequired,
   children: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  markers: PropTypes.array
+  markers: PropTypes.array,
+  polygons: PropTypes.array
 }
 
 export default Map

@@ -3,11 +3,32 @@ import React, { Component } from 'react'
 import { Map, Marker, Polygon } from '@src'
 
 class App extends Component {
+  constructor (props) {
+    super(props)
+
+    this.state = {
+      width: window.innerWidth
+    }
+  }
+
+  updateDimensions () {
+    this.setState({ width: window.innerWidth })
+  }
+
+  componentDidMount () {
+    this.updateDimensions()
+    window.addEventListener('resize', this.updateDimensions.bind(this))
+  }
+
+  componentWillUnmount () {
+    window.removeEventListener('resize', this.updateDimensions.bind(this))
+  }
+
   render () {
     return (
       <div>
         <Map
-          width={800}
+          width={this.state.width}
           height={600}
           zoom={4}
           center={[38.86530697026126, -77.20057854052735]}
