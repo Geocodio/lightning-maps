@@ -35,6 +35,7 @@ class Map extends Component {
     this.lightningMap = new LightningMap.Map(this.canvasRef.current, this.getMapOptions())
     this.lightningMap.onMarkerClicked = this.props.onMarkerClicked || null
     this.lightningMap.onMarkerHover = this.props.onMarkerHover || null
+    this.lightningMap.onPolygonClicked = this.props.onPolygonClicked || null
     this.lightningMap.onPolygonHover = this.props.onPolygonHover || null
 
     this.renderChildren()
@@ -178,7 +179,11 @@ Map.propTypes = {
   center: PropTypes.arrayOf(PropTypes.number.isRequired).isRequired,
   children: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   markers: PropTypes.array,
-  polygons: PropTypes.array
+  polygons: PropTypes.array,
+  onMarkerClicked: PropTypes.func,
+  onMarkerHover: PropTypes.func,
+  onPolygonClicked: PropTypes.func,
+  onPolygonHover: PropTypes.func
 }
 
 export default Map
