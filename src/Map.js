@@ -25,6 +25,7 @@ export default class Map {
      */
     this.onMarkerClicked = null;
     this.onMarkerHover = null;
+    this.onPolygonClicked = null;
     this.onPolygonHover = null;
 
     this.draw = this.draw.bind(this);
@@ -175,37 +176,43 @@ export default class Map {
         const x = -(this.state.dragStartPosition[0] - this.state.mousePosition.x);
         const y = -(this.state.dragStartPosition[1] - this.state.mousePosition.y);
 
-        if (this.state.moveOffset[0] !== 0 || this.state.moveOffset[1] !== 0) {
-          const now = window.performance.now();
-          const timingThreshold = now - this.options.throwTimingThresholdMs;
+        this.state.dragStartPosition = null;
 
-          const thresholdsToConsider = this.state.mouseVelocities
-            .filter(threshold => threshold[0] > timingThreshold)
-            .map(threshold => threshold[1]);
+        const dragDistanceBelowThreshold = Math.abs(x) <= 5 && Math.abs(y) <= 5;
 
-          const velocitySum = thresholdsToConsider.reduce(
-            (accumulator, velocity) => accumulator + velocity,
-            0
-          );
+        if (dragDistanceBelowThreshold) {
+          this.handleMouseEventInteraction(event, 'mouseup');
+        } else {
+          if (this.state.moveOffset[0] !== 0 || this.state.moveOffset[1] !== 0) {
+            const now = window.performance.now();
+            const timingThreshold = now - this.options.throwTimingThresholdMs;
 
-          const averageVelocity = velocitySum / thresholdsToConsider.length;
+            const thresholdsToConsider = this.state.mouseVelocities
+              .filter(threshold => threshold[0] > timingThreshold)
+              .map(threshold => threshold[1]);
 
-          if (averageVelocity >= this.options.throwVelocityThreshold) {
-            let multiplier = averageVelocity / this.options.throwVelocityThreshold
-              * this.options.panAccelerationMultiplier;
-
-            multiplier = Math.min(multiplier, this.options.maxPanAcceleration);
-
-            this.setTargetMoveOffset(
-              x * multiplier,
-              y * multiplier
+            const velocitySum = thresholdsToConsider.reduce(
+              (accumulator, velocity) => accumulator + velocity,
+              0
             );
-          } else {
-            this.updateCenter();
+
+            const averageVelocity = velocitySum / thresholdsToConsider.length;
+
+            if (averageVelocity >= this.options.throwVelocityThreshold) {
+              let multiplier = averageVelocity / this.options.throwVelocityThreshold
+                * this.options.panAccelerationMultiplier;
+
+              multiplier = Math.min(multiplier, this.options.maxPanAcceleration);
+
+              this.setTargetMoveOffset(
+                x * multiplier,
+                y * multiplier
+              );
+            } else {
+              this.updateCenter();
+            }
           }
         }
-
-        this.state.dragStartPosition = null;
       }
     });
 
@@ -238,6 +245,10 @@ export default class Map {
 
   isCurrentlyDraggingMap() {
     return this.state.dragStartPosition !== null;
+  }
+
+  enablePolygonInteractivity() {
+    return this.onPolygonHover || this.onPolygonClicked;
   }
 
   updateMousePosition(event) {
@@ -479,7 +490,7 @@ export default class Map {
     this.state.polygons.map(polygon => {
       polygon.render(this.context, mapState);
 
-      if (!this.isCurrentlyDraggingMap() && this.onPolygonHover) {
+      if (this.enablePolygonInteractivity() && !this.isCurrentlyDraggingMap()) {
         polygon.handleMouseOver(this.context, mapState, this.state.mousePosition);
       }
     });
@@ -514,28 +525,32 @@ export default class Map {
 
     let polygonIsHover = false;
 
-    if (this.onPolygonHover) {
+    if (this.enablePolygonInteractivity() && !this.isCurrentlyDraggingMap() && !controlsOrMarkersIsHover) {
       let polygons = [];
 
-      if (!controlsOrMarkersIsHover && !this.isCurrentlyDraggingMap()) {
-        const mapState = new MapState(
-          this.options.center,
-          this.options.zoom,
-          this.state.targetZoom,
-          this.options.tileSize,
-          this.state.canvasDimensions,
-          this.state.moveOffset
-        );
+      const mapState = new MapState(
+        this.options.center,
+        this.options.zoom,
+        this.state.targetZoom,
+        this.options.tileSize,
+        this.state.canvasDimensions,
+        this.state.moveOffset
+      );
 
-        polygons = this.state.polygons.map(polygon =>
-          polygon.handleMouseOver(null, mapState, this.state.mousePosition)
-        ).filter(polygon => polygon.length > 0);
-      }
+      polygons = this.state.polygons.map(polygon =>
+        polygon.handleMouseOver(null, mapState, this.state.mousePosition)
+      ).filter(polygon => polygon.length > 0);
 
       polygonIsHover = polygons.length > 0;
 
       if (polygonIsHover) {
-        polygons.map(polygon => polygon.map(item => this.onPolygonHover(item)));
+        const eventHandler = (name === 'mouseup')
+          ? this.onPolygonClicked
+          : this.onPolygonHover;
+
+        if (eventHandler) {
+          polygons.map(polygon => polygon.map(item => eventHandler(item)));
+        }
       }
     }
 
