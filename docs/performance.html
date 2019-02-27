@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Lightning Maps</title>
+    <style type="text/css">
+    html, body {
+      margin: 0;
+    }
+    </style>
+  </head>
+  <body>
+    <canvas id="map" width="800" height="600"></canvas>
+    <script src="LightningMaps.js"></script>
+    <script>
+    var canvas = document.getElementById('map');
+    canvas.width = document.documentElement.clientWidth;
+    canvas.height = document.documentElement.clientHeight;
+
+    var map = new LightningMaps.Map(canvas, {
+      source: function (x, y, z) {
+        return `https://maps.geocod.io/tiles/base/${z}/${x}/${y}.png`;
+      },
+      zoom: 3,
+      center: [38.86530697026126, -77.20057854052735]
+    });
+
+    for (var i = 0; i < 10000; i++) {
+      map.addMarker(new LightningMaps.Marker([-90 + (Math.random() * 90 * 2), -180 + (Math.random() * 180 * 2)], { color: 'rgba(0, 200, 200, 0.5)', type: 'circle' }));
+    }
+    </script>
+  </body>
+</html>

@@ -142,14 +142,16 @@ export default class Map {
       event.preventDefault();
       this.updateMousePosition(event);
 
-      const canvasCenter = this.getCanvasCenter();
+      if (!this.handleMouseEventInteraction(event, 'dblclick')) {
+        const canvasCenter = this.getCanvasCenter();
 
-      this.setTargetMoveOffset(
-        -(this.state.mousePosition.x - canvasCenter[0]),
-        -(this.state.mousePosition.y - canvasCenter[1])
-      );
+        this.setTargetMoveOffset(
+          -(this.state.mousePosition.x - canvasCenter[0]),
+          -(this.state.mousePosition.y - canvasCenter[1])
+        );
 
-      this.setZoom(this.options.zoom + 1);
+        this.setZoom(this.options.zoom + 1);
+      }
     });
 
     this.canvas.addEventListener('mousedown', event => {
