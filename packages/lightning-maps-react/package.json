@@ -12,7 +12,7 @@
     "bump": "npx standard-version"
   },
   "dependencies": {
-    "lightning-maps": "^0.0.15",
+    "lightning-maps": "^0.0.16",
     "react": "^16.7.0",
     "react-dom": "^16.7.0"
   },
