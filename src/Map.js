@@ -372,7 +372,7 @@ export default class Map {
     }
   }
 
-  buildMapState() {
+  snapshotMapState() {
     return new MapState(
       this.options.center,
       this.options.zoom,
@@ -426,7 +426,7 @@ export default class Map {
         this.state.tileLayers[0].drawTiles(this.state.scale);
       }
 
-      const mapState = this.buildMapState();
+      const mapState = this.snapshotMapState();
 
       this.renderPolygons(mapState);
       this.renderMarkers(mapState);
@@ -484,7 +484,7 @@ export default class Map {
     const controlObjects = this.getControlObjects().filter(item => this.isMouseOverObject(item.bounds));
 
     const markers = controlObjects.length <= 0 && (this.onMarkerClicked || this.onMarkerHover)
-      ? this.getMarkersBounds(this.buildMapState()).filter(item => this.isMouseOverObject(item.bounds))
+      ? this.getMarkersBounds(this.snapshotMapState()).filter(item => this.isMouseOverObject(item.bounds))
       : [];
 
     if (name === 'mouseup') {
@@ -512,7 +512,7 @@ export default class Map {
     if (this.enablePolygonInteractivity() && !this.isCurrentlyDraggingMap() && !controlsOrMarkersIsHover) {
       let polygons = [];
 
-      const mapState = this.buildMapState();
+      const mapState = this.snapshotMapState();
 
       polygons = this.state.polygons.map(polygon =>
         polygon.handleMouseOver(null, mapState, this.state.mousePosition)
