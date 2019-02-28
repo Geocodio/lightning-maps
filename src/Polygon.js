@@ -66,16 +66,11 @@ export default class Polygon {
       return [];
     }
 
-    const canvasCenter = [
-      mapState.canvasDimensions[0] / 2,
-      mapState.canvasDimensions[1] / 2
-    ];
-
     const originZoom = this.determineOriginZoom(mapState);
     const centerOffset = this.calculateCenterOffset(mapState, originZoom);
     const point = [
-      mousePosition.x - centerOffset[0] - canvasCenter[0],
-      mousePosition.y - centerOffset[1] - canvasCenter[1]
+      mousePosition.x - centerOffset[0] - mapState.canvasCenter[0],
+      mousePosition.y - centerOffset[1] - mapState.canvasCenter[1]
     ];
 
     return this.projectedGeometry.filter(item => {
@@ -87,8 +82,8 @@ export default class Polygon {
         item.geometry.map((list) => {
           list.map((position, index) => {
             position = [
-              position[0] + centerOffset[0] + canvasCenter[0],
-              position[1] + centerOffset[1] + canvasCenter[1]
+              position[0] + centerOffset[0] + mapState.canvasCenter[0],
+              position[1] + centerOffset[1] + mapState.canvasCenter[1]
             ];
 
             if (index === 0) {
@@ -154,14 +149,9 @@ export default class Polygon {
       this.calculatePolygonExtends(centerOffset);
     }
 
-    const canvasCenter = [
-      mapState.canvasDimensions[0] / 2,
-      mapState.canvasDimensions[1] / 2
-    ];
-
     const imagePosition = [
-      canvasCenter[0] + mapState.moveOffset[0] + (this.polygonExtends.minX * scale),
-      canvasCenter[1] + mapState.moveOffset[1] + (this.polygonExtends.minY * scale)
+      mapState.canvasCenter[0] + mapState.moveOffset[0] + (this.polygonExtends.minX * scale),
+      mapState.canvasCenter[1] + mapState.moveOffset[1] + (this.polygonExtends.minY * scale)
     ];
 
     const imageRect = {
@@ -176,8 +166,8 @@ export default class Polygon {
     }
 
     const imageDrawPosition = [
-      mapState.moveOffset[0] - (canvasCenter[0] * (scale - 1)),
-      mapState.moveOffset[1] - (canvasCenter[1] * (scale - 1))
+      mapState.moveOffset[0] - (mapState.canvasCenter[0] * (scale - 1)),
+      mapState.moveOffset[1] - (mapState.canvasCenter[1] * (scale - 1))
     ];
 
     const scaledWidth = this.polygonDimensions[0] * scale,
