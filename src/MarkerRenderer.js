@@ -35,7 +35,7 @@ export default class MarkerRenderer {
 
     const scale = zoomDiff !== 0
       ? Math.pow(2, zoomDiff)
-      : 1;
+      : 1.0;
 
     if (this.shouldReRender(mapState, zoomDiff)) {
       this.renderOffScreenCanvas(mapState, mapBounds);
@@ -44,16 +44,26 @@ export default class MarkerRenderer {
     const scaledWidth = this.markerCanvasDimensions[0] * scale,
       scaledHeight = this.markerCanvasDimensions[1] * scale;
 
+    console.log(mapState.canvasCenter);
+
     const imageDrawPosition = [
-      (this.markerExtends.minX + mapState.moveOffset[0])
-      - ((scaledWidth - this.markerCanvasDimensions[0]) / 2),
-      (this.markerExtends.minY + mapState.moveOffset[1])
-      - ((scaledHeight - this.markerCanvasDimensions[1]) / 2)
+      (mapState.canvasCenter[0] * scale) + (this.markerExtends.minX + mapState.moveOffset[0]),
+      (mapState.canvasCenter[1] * scale) + (this.markerExtends.minY + mapState.moveOffset[1])
     ];
+
+    const centerZoomOffset = [
+      this.markerCanvasDimensions[0] / 2 - scaledWidth / 2,
+      this.markerCanvasDimensions[1] / 2 - scaledHeight / 2
+    ];
+
+    context.lineWidth = 15;
+    context.strokeStyle = 'red';
+    context.strokeRect(imageDrawPosition[0], imageDrawPosition[1],
+      this.markerCanvasDimensions[0], this.markerCanvasDimensions[1]);
 
     context.drawImage(
       this.offscreenCanvas,
-      imageDrawPosition[0], imageDrawPosition[1],
+      imageDrawPosition[0] + centerZoomOffset[0], imageDrawPosition[1] + centerZoomOffset[1],
       scaledWidth, scaledHeight
     );
   }
@@ -81,8 +91,8 @@ export default class MarkerRenderer {
 
       return {
         marker,
-        x: mapState.canvasCenter[0] - position[0] + mapState.moveOffset[0],
-        y: mapState.canvasCenter[1] - position[1] + mapState.moveOffset[1]
+        x: position[0],
+        y: position[1]
       };
     });
 
@@ -96,6 +106,8 @@ export default class MarkerRenderer {
   }
 
   calculateMarkerExtends(markers) {
+    console.log('calculateMarkerExtends');
+
     let minX, maxX, minY, maxY = null;
 
     markers.forEach(marker => {
