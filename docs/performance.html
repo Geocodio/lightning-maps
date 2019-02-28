@@ -22,12 +22,23 @@
       source: function (x, y, z) {
         return `https://maps.geocod.io/tiles/base/${z}/${x}/${y}.png`;
       },
-      zoom: 3,
-      center: [38.86530697026126, -77.20057854052735]
+      zoom: 6,
+      center: [34, -122]
     });
 
+    map.onPolygonClicked = function (polygon) {
+      console.log(polygon.properties);
+    };
+
+    fetch('https://gistcdn.githack.com/mpmckenna8/af23032b41f0ea1212563b523e859228/raw/0cbceeedf57d9bf2e723f57d19e923591b9249a0/schoolsca.topojson')
+      .then(response => response.json())
+      .then(json => {
+        map.addPolygon(new LightningMaps.Polygon(json, 'caschools'));
+      })
+      .catch(err => console.log(`Could not load polygon: ${err.message || err}`));
+
     for (var i = 0; i < 10000; i++) {
-      map.addMarker(new LightningMaps.Marker([-90 + (Math.random() * 90 * 2), -180 + (Math.random() * 180 * 2)], { color: 'rgba(0, 200, 200, 0.5)', type: 'circle' }));
+      map.addMarker(new LightningMaps.Marker([30 + (Math.random() * 12), -125 + (Math.random() * 12)], { color: 'rgba(0, 200, 200, 0.1)', type: 'circle' }));
     }
     </script>
   </body>
