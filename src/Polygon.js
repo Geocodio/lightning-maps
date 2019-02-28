@@ -111,6 +111,13 @@ export default class Polygon {
     ];
   }
 
+  shouldReRender(mapState, zoomDiff) {
+    const mapCenterChanged = this.renderedMapCenter !== mapState.center,
+      mapZoomChanged = (zoomDiff === 0 && this.renderedZoomLevel !== mapState.zoom);
+
+    return mapCenterChanged || mapZoomChanged;
+  }
+
   render(context, mapState) {
     if (!this.geometry) {
       return;
@@ -126,14 +133,9 @@ export default class Polygon {
       ? Math.pow(2, zoomDiff)
       : 1;
 
-    const mapCenterChanged = this.renderedMapCenter !== mapState.center,
-      mapZoomChanged = (zoomDiff === 0 && this.renderedZoomLevel !== mapState.zoom);
+    if (this.shouldReRender(mapState, zoomDiff)) {
+      let centerOffset = null;
 
-    const shouldReRender = mapCenterChanged || mapZoomChanged;
-
-    let centerOffset = null;
-
-    if (shouldReRender) {
       this.renderedZoomLevel = mapState.zoom;
       this.renderedMapCenter = mapState.center;
 
@@ -147,21 +149,19 @@ export default class Polygon {
       centerOffset = this.calculateCenterOffset(mapState, originZoom);
 
       this.calculatePolygonExtends(centerOffset);
-    }
 
-    const imagePosition = [
-      mapState.canvasCenter[0] + mapState.moveOffset[0] + (this.polygonExtends.minX * scale),
-      mapState.canvasCenter[1] + mapState.moveOffset[1] + (this.polygonExtends.minY * scale)
-    ];
+      const imagePosition = [
+        mapState.canvasCenter[0] + mapState.moveOffset[0] + (this.polygonExtends.minX * scale),
+        mapState.canvasCenter[1] + mapState.moveOffset[1] + (this.polygonExtends.minY * scale)
+      ];
 
-    const imageRect = {
-      left: Math.floor(imagePosition[0] * -1),
-      right: Math.ceil(Math.abs(imagePosition[0]) + mapState.canvasDimensions[0]),
-      top: Math.floor(imagePosition[1] * -1),
-      bottom: Math.ceil(Math.abs(imagePosition[1]) + mapState.canvasDimensions[1])
-    };
+      const imageRect = {
+        left: Math.floor(imagePosition[0] * -1),
+        right: Math.ceil(Math.abs(imagePosition[0]) + mapState.canvasDimensions[0]),
+        top: Math.floor(imagePosition[1] * -1),
+        bottom: Math.ceil(Math.abs(imagePosition[1]) + mapState.canvasDimensions[1])
+      };
 
-    if (shouldReRender) {
       this.renderOffscreenCanvas(mapState, centerOffset, imageRect);
     }
 
