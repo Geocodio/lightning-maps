@@ -86,7 +86,26 @@ export const defaultMarkerOptions = {
    * You might for example want add a vertical offset to teardrop-shaped marker icons
    * Note: Only used for markers with the "image" type
    */
-  offset: [0, 0]
+  offset: [0, 0],
+
+  /**
+   * Whether the marker should have a stroked line
+   * Only applicable when type is circle
+   */
+  enableStroke: false,
+
+  /**
+   * What color should the border be?
+   * Supports hex, rgb and rgba values
+   * Only applicable when enableStroke is true and type is circle
+   */
+  strokeStyle: 'rgba(100, 100, 100, 0.9)',
+
+  /**
+   * Specify the thickness of marker border
+   * Only applicable when enableStroke is true and type is circle
+   */
+  lineWidth: 2.5
 };
 
 export const defaultPolygonOptions = {
