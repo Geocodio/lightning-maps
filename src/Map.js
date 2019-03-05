@@ -1,6 +1,7 @@
 import TileConversion from './TileConversion';
 import TileLayer from './TileLayer';
 import MapState from './MapState';
+import MarkerRenderer from './MarkerRenderer';
 import { defaultMapOptions } from './defaultOptions';
 
 export default class Map {
@@ -48,7 +49,7 @@ export default class Map {
       scale: 1,
       lastMouseMoveEvent: null,
       mouseVelocities: [],
-      markers: [],
+      markerRenderer: new MarkerRenderer(),
       polygons: [],
       tileLayers: [
         new TileLayer(this)
@@ -371,6 +372,18 @@ export default class Map {
     }
   }
 
+  snapshotMapState() {
+    return new MapState(
+      this.options.center,
+      this.options.zoom,
+      this.state.targetZoom,
+      this.options.tileSize,
+      this.state.canvasDimensions,
+      this.getCanvasCenter(),
+      this.state.moveOffset
+    );
+  }
+
   maxTilesToKeep() {
     return 1000;
   }
@@ -413,8 +426,10 @@ export default class Map {
         this.state.tileLayers[0].drawTiles(this.state.scale);
       }
 
-      this.renderPolygons();
-      this.renderMarkers();
+      const mapState = this.snapshotMapState();
+
+      this.renderPolygons(mapState);
+      this.renderMarkers(mapState);
       this.renderControls();
       this.renderAttribution();
     }
@@ -444,15 +459,6 @@ export default class Map {
     };
   }
 
-  getVisibleMarkers() {
-    const bounds = this.getMapBounds();
-
-    return this.state.markers.filter(marker => {
-      return marker.coords[0] <= bounds.nw[0] && marker.coords[0] >= bounds.se[0]
-        && marker.coords[1] >= bounds.nw[1] && marker.coords[1] <= bounds.se[1];
-    });
-  }
-
   getCanvasCenter() {
     return [
       this.state.canvasDimensions[0] / 2,
@@ -460,35 +466,11 @@ export default class Map {
     ];
   }
 
-  renderMarkers() {
-    const visibleMarkers = this.getVisibleMarkers();
-    const canvasCenter = this.getCanvasCenter();
-
-    visibleMarkers.map(marker => {
-      const position = TileConversion.latLonToPixel(
-        marker.coords,
-        this.options.center,
-        this.options.zoom,
-        this.options.tileSize
-      );
-
-      marker.render(this.context, [
-        canvasCenter[0] - position[0] + this.state.moveOffset[0],
-        canvasCenter[1] - position[1] + this.state.moveOffset[1]
-      ]);
-    });
+  renderMarkers(mapState) {
+    this.state.markerRenderer.render(this.context, mapState, this.getMapBounds());
   }
 
-  renderPolygons() {
-    const mapState = new MapState(
-      this.options.center,
-      this.options.zoom,
-      this.state.targetZoom,
-      this.options.tileSize,
-      this.state.canvasDimensions,
-      this.state.moveOffset
-    );
-
+  renderPolygons(mapState) {
     this.state.polygons.map(polygon => {
       polygon.render(this.context, mapState);
 
@@ -502,7 +484,7 @@ export default class Map {
     const controlObjects = this.getControlObjects().filter(item => this.isMouseOverObject(item.bounds));
 
     const markers = controlObjects.length <= 0 && (this.onMarkerClicked || this.onMarkerHover)
-      ? this.getMarkersBounds().filter(item => this.isMouseOverObject(item.bounds))
+      ? this.getMarkersBounds(this.snapshotMapState()).filter(item => this.isMouseOverObject(item.bounds))
       : [];
 
     if (name === 'mouseup') {
@@ -530,14 +512,7 @@ export default class Map {
     if (this.enablePolygonInteractivity() && !this.isCurrentlyDraggingMap() && !controlsOrMarkersIsHover) {
       let polygons = [];
 
-      const mapState = new MapState(
-        this.options.center,
-        this.options.zoom,
-        this.state.targetZoom,
-        this.options.tileSize,
-        this.state.canvasDimensions,
-        this.state.moveOffset
-      );
+      const mapState = this.snapshotMapState();
 
       polygons = this.state.polygons.map(polygon =>
         polygon.handleMouseOver(null, mapState, this.state.mousePosition)
@@ -589,33 +564,6 @@ export default class Map {
         label: '-'
       }
     ];
-  }
-
-  getMarkersBounds() {
-    const visibleMarkers = this.getVisibleMarkers();
-    const canvasCenter = this.getCanvasCenter();
-
-    return visibleMarkers.map(marker => {
-      const position = TileConversion.latLonToPixel(
-        marker.coords,
-        this.options.center,
-        this.options.zoom,
-        this.options.tileSize
-      );
-
-      const markerSize = marker.size;
-      const markerOffset = marker.offset;
-
-      return {
-        bounds: {
-          x: canvasCenter[0] - position[0] + this.state.moveOffset[0] - (markerSize[0] / 2) + markerOffset[0],
-          y: canvasCenter[1] - position[1] + this.state.moveOffset[1] - (markerSize[1] / 2) + markerOffset[1],
-          width: markerSize[0],
-          height: markerSize[1]
-        },
-        marker
-      };
-    });
   }
 
   renderControls() {
@@ -688,7 +636,7 @@ export default class Map {
   }
 
   addMarker(marker) {
-    this.state.markers.push(marker);
+    this.state.markerRenderer.markers.push(marker);
   }
 
   addMarkers(markers) {
@@ -696,7 +644,7 @@ export default class Map {
   }
 
   setMarkers(markers) {
-    this.state.markers = markers;
+    this.state.markerRenderer.markers = markers;
     this.state.forceRedraw = true;
   }
 

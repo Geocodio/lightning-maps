@@ -22,7 +22,7 @@
       source: function (x, y, z) {
         return `https://maps.geocod.io/tiles/base/${z}/${x}/${y}.png`;
       },
-      zoom: 6,
+      zoom: 5,
       center: [34, -122]
     });
 
@@ -37,7 +37,7 @@
       })
       .catch(err => console.log(`Could not load polygon: ${err.message || err}`));
 
-    for (var i = 0; i < 10000; i++) {
+    for (var i = 0; i < 25000; i++) {
       map.addMarker(new LightningMaps.Marker([30 + (Math.random() * 12), -125 + (Math.random() * 12)], { color: 'rgba(0, 200, 200, 0.1)', type: 'circle' }));
     }
     </script>

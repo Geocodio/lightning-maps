@@ -22,8 +22,13 @@ export default class Marker {
           24.786272
         ];
 
-      case 'circle':
-        return [10, 10];
+      case 'circle': {
+        const strokeMargin = this.options.enableStroke
+          ? this.options.lineWidth
+          : 0;
+
+        return [10 + strokeMargin, 10 + strokeMargin];
+      }
 
       case 'donut':
         return [14, 14];
@@ -78,23 +83,32 @@ export default class Marker {
     if (!renderFunction) {
       throw new Error(`Unsupported marker type: "${this.options.type}"`);
     } else {
-      context.fillStyle = this.options.color;
-      context.strokeStyle = this.options.color;
-
       renderFunction = renderFunction.bind(this);
       renderFunction(context, position);
     }
   }
 
   renderCircle(context, position) {
+    context.fillStyle = this.options.color;
+    context.strokeStyle = this.options.strokeStyle;
+    context.lineWidth = this.options.lineWidth;
+
     context.save();
     context.beginPath();
     context.arc(position[0], position[1], this.size[0] / 2, 0, 2 * Math.PI);
     context.fill();
+
+    if (this.options.enableStroke) {
+      context.stroke();
+    }
+
     context.restore();
   }
 
   renderDonut(context, position) {
+    context.fillStyle = this.options.color;
+    context.strokeStyle = this.options.color;
+
     context.save();
     context.beginPath();
     context.lineWidth = 5;
@@ -104,6 +118,9 @@ export default class Marker {
   }
 
   renderMarker(context, position) {
+    context.fillStyle = this.options.color;
+    context.strokeStyle = this.options.color;
+
     const size = this.size;
 
     const x = position[0] - size[0] / 2;

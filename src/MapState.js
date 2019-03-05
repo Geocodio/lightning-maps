@@ -1,10 +1,11 @@
 export default class MapState {
-  constructor(center, zoom, targetZoom, tileSize, canvasDimensions, moveOffset) {
+  constructor(center, zoom, targetZoom, tileSize, canvasDimensions, canvasCenter, moveOffset) {
     this._center = center;
     this._zoom = zoom;
     this._targetZoom = targetZoom;
     this._tileSize = tileSize;
     this._canvasDimensions = canvasDimensions;
+    this._canvasCenter = canvasCenter;
     this._moveOffset = moveOffset;
   }
 
@@ -26,6 +27,10 @@ export default class MapState {
 
   get canvasDimensions() {
     return this._canvasDimensions;
+  }
+
+  get canvasCenter() {
+    return this._canvasCenter;
   }
 
   get moveOffset() {
