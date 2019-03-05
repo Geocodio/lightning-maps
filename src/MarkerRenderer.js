@@ -41,31 +41,23 @@ export default class MarkerRenderer {
       this.renderOffScreenCanvas(mapState, mapBounds);
     }
 
-    const scaledWidth = this.markerCanvasDimensions[0] * scale,
-      scaledHeight = this.markerCanvasDimensions[1] * scale;
+    if (scale < 1.5 || scale > 0.5) {
+      const canvasDrawPosition = [
+        mapState.moveOffset[0] - (mapState.canvasCenter[0] * (scale - 1)),
+        mapState.moveOffset[1] - (mapState.canvasCenter[1] * (scale - 1))
+      ];
 
-    console.log(mapState.canvasCenter);
+      const canvasDrawDimensions = [
+        mapState.canvasDimensions[0] * scale,
+        mapState.canvasDimensions[1] * scale
+      ];
 
-    const imageDrawPosition = [
-      (mapState.canvasCenter[0] * scale) + (this.markerExtends.minX + mapState.moveOffset[0]),
-      (mapState.canvasCenter[1] * scale) + (this.markerExtends.minY + mapState.moveOffset[1])
-    ];
-
-    const centerZoomOffset = [
-      this.markerCanvasDimensions[0] / 2 - scaledWidth / 2,
-      this.markerCanvasDimensions[1] / 2 - scaledHeight / 2
-    ];
-
-    context.lineWidth = 15;
-    context.strokeStyle = 'red';
-    context.strokeRect(imageDrawPosition[0], imageDrawPosition[1],
-      this.markerCanvasDimensions[0], this.markerCanvasDimensions[1]);
-
-    context.drawImage(
-      this.offscreenCanvas,
-      imageDrawPosition[0] + centerZoomOffset[0], imageDrawPosition[1] + centerZoomOffset[1],
-      scaledWidth, scaledHeight
-    );
+      context.drawImage(
+        this.offscreenCanvas,
+        canvasDrawPosition[0], canvasDrawPosition[1],
+        canvasDrawDimensions[0], canvasDrawDimensions[1],
+      );
+    }
   }
 
   shouldReRender(mapState, zoomDiff) {
@@ -79,9 +71,10 @@ export default class MarkerRenderer {
     this.renderedZoomLevel = mapState.zoom;
     this.renderedMapCenter = mapState.center;
 
+    const context = this.createOffscreenCanvas(mapState.canvasDimensions);
     const visibleMarkers = this.getVisibleMarkers(mapBounds);
 
-    const renderableMarkers = visibleMarkers.map(marker => {
+    visibleMarkers.forEach(marker => {
       const position = TileConversion.latLonToPixel(
         marker.coords,
         mapState.center,
@@ -89,60 +82,17 @@ export default class MarkerRenderer {
         mapState.tileSize
       );
 
-      return {
-        marker,
-        x: position[0],
-        y: position[1]
-      };
+      marker.render(context, [
+        mapState.canvasCenter[0] - position[0],
+        mapState.canvasCenter[1] - position[1]
+      ]);
     });
-
-    this.calculateMarkerExtends(renderableMarkers);
-    const context = this.createOffscreenCanvas();
-
-    renderableMarkers.forEach(item => item.marker.render(context, [
-      item.x - this.markerExtends.minX,
-      item.y - this.markerExtends.minY
-    ]));
   }
 
-  calculateMarkerExtends(markers) {
-    console.log('calculateMarkerExtends');
-
-    let minX, maxX, minY, maxY = null;
-
-    markers.forEach(marker => {
-      if (!maxX || marker.x > maxX) {
-        maxX = marker.x;
-      }
-
-      if (!minX || marker.x < minX) {
-        minX = marker.x;
-      }
-
-      if (!maxY || marker.y > maxY) {
-        maxY = marker.y;
-      }
-
-      if (!minY || marker.y < minY) {
-        minY = marker.y;
-      }
-    });
-
-    this.markerCanvasDimensions = [
-      Math.ceil(maxX - minX),
-      Math.ceil(maxY - minY)
-    ];
-
-    this.markerExtends = {
-      minX, maxX,
-      minY, maxY
-    };
-  }
-
-  createOffscreenCanvas() {
+  createOffscreenCanvas(canvasDimensions) {
     this.offscreenCanvas = document.createElement('canvas');
-    this.offscreenCanvas.width = this.markerCanvasDimensions[0];
-    this.offscreenCanvas.height = this.markerCanvasDimensions[1];
+    this.offscreenCanvas.width = canvasDimensions[0];
+    this.offscreenCanvas.height = canvasDimensions[1];
 
     return this.offscreenCanvas.getContext('2d');
   }
