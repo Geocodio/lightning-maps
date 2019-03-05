@@ -134,7 +134,6 @@ export default class Polygon {
       : 1;
 
     if (this.shouldReRender(mapState, zoomDiff)) {
-      console.log(scale);
       let centerOffset = null;
 
       this.renderedZoomLevel = mapState.zoom;
