@@ -28,6 +28,8 @@ export default class Map {
     this.onMarkerHover = null;
     this.onPolygonClicked = null;
     this.onPolygonHover = null;
+    this.onMapCenterChanged = null;
+    this.onMapZoomChanged = null;
 
     this.draw = this.draw.bind(this);
     window.requestAnimationFrame(this.draw);
@@ -315,6 +317,8 @@ export default class Map {
 
     this.setTargetMoveOffset(0, 0, false);
     this.options.center = latLon;
+
+    this.onMapCenterChanged && this.onMapCenterChanged(this.options.center);
   }
 
   updateZoom() {
@@ -346,6 +350,8 @@ export default class Map {
         this.state.tileLayers[0].tilesZoomLevel = null;
 
         // this.state.tileLayers[this.state.tileLayers.length - 1].shouldBeDeleted = true;
+
+        this.onMapZoomChanged && this.onMapZoomChanged(this.options.zoom);
       }
     } else {
       this.state.scale = 1;

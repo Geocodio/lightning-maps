@@ -38,6 +38,14 @@
       console.log('You hovered ' + feature.properties.NAME);
     };
 
+    map.onMapCenterChanged = function (center) {
+      console.log('New center is ' + center.join(', '));
+    };
+
+    map.onMapZoomChanged = function (zoom) {
+      console.log('New zoom is ' + zoom);
+    };
+
     fetch('https://gistcdn.githack.com/mpmckenna8/af23032b41f0ea1212563b523e859228/raw/0cbceeedf57d9bf2e723f57d19e923591b9249a0/schoolsca.topojson')
       .then(response => response.json())
       .then(json => {
