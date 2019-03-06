@@ -55,7 +55,8 @@ export default class Map {
         new TileLayer(this)
       ],
       mousePosition: { x: 0, y: 0},
-      forceRedraw: false
+      forceRedraw: false,
+      forceRerenderMarkers: false
     };
   }
 
@@ -467,7 +468,8 @@ export default class Map {
   }
 
   renderMarkers(mapState) {
-    this.state.markerRenderer.render(this.context, mapState, this.getMapBounds());
+    this.state.markerRenderer.render(this.context, mapState, this.getMapBounds(), this.state.forceRerenderMarkers);
+    this.state.forceRerenderMarkers = false;
   }
 
   renderPolygons(mapState) {
@@ -635,17 +637,20 @@ export default class Map {
     this.context.fill();
   }
 
-  addMarker(marker) {
-    this.state.markerRenderer.markers.push(marker);
-  }
-
   addMarkers(markers) {
     markers.map(marker => this.addMarker(marker));
+  }
+
+  addMarker(marker) {
+    this.state.markerRenderer.markers.push(marker);
+    this.state.forceRedraw = true;
+    this.state.forceRerenderMarkers = true;
   }
 
   setMarkers(markers) {
     this.state.markerRenderer.markers = markers;
     this.state.forceRedraw = true;
+    this.state.forceRerenderMarkers = true;
   }
 
   addPolygon(polygon) {

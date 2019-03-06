@@ -4,6 +4,8 @@ export default class MarkerRenderer {
   constructor() {
     this._markers = [];
     this.offscreenCanvas = null;
+    this.renderedMapCenter = null;
+    this.renderedZoomLevel = null;
   }
 
   get markers() {
@@ -26,7 +28,7 @@ export default class MarkerRenderer {
     return originZoom;
   }
 
-  render(context, mapState, mapBounds) {
+  render(context, mapState, mapBounds, forceRerender = false) {
     const originZoom = this.determineOriginZoom(mapState);
 
     const zoomDiff = originZoom
@@ -37,7 +39,7 @@ export default class MarkerRenderer {
       ? Math.pow(2, zoomDiff)
       : 1.0;
 
-    if (this.shouldReRender(mapState, zoomDiff)) {
+    if (forceRerender || this.shouldReRender(mapState, zoomDiff)) {
       this.renderOffScreenCanvas(mapState, mapBounds);
     }
 
