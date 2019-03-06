@@ -106,8 +106,8 @@ export default class MarkerRenderer {
     });
   }
 
-  getMarkersBounds(mapState) {
-    return this.getVisibleMarkers().map(marker => {
+  getMarkersBounds(mapState, mapBounds) {
+    return this.getVisibleMarkers(mapBounds).map(marker => {
       const position = TileConversion.latLonToPixel(
         marker.coords,
         mapState.center,

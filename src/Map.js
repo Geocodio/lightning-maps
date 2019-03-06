@@ -484,9 +484,11 @@ export default class Map {
 
   handleMouseEventInteraction(event, name) {
     const controlObjects = this.getControlObjects().filter(item => this.isMouseOverObject(item.bounds));
+    const shouldEmitMarkerEvents = controlObjects.length <= 0 && (this.onMarkerClicked || this.onMarkerHover);
 
-    const markers = controlObjects.length <= 0 && (this.onMarkerClicked || this.onMarkerHover)
-      ? this.getMarkersBounds(this.snapshotMapState()).filter(item => this.isMouseOverObject(item.bounds))
+    const markers = shouldEmitMarkerEvents
+      ? this.state.markerRenderer.getMarkersBounds(this.snapshotMapState(), this.getMapBounds())
+        .filter(item => this.isMouseOverObject(item.bounds))
       : [];
 
     if (name === 'mouseup') {
