@@ -586,7 +586,7 @@ export default class Map {
     this.context.font = 'bold 25px courier';
     this.context.textAlign = 'center';
     this.context.textBaseline = 'middle';
-    this.context.fillStyle = 'rgba(255, 255, 255)';
+    this.context.fillStyle = '#fff';
 
     this.context.fillText(
       label,
