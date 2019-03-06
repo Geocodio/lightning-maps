@@ -1,6 +1,6 @@
 {
   "name": "lightning-maps-react",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "main": "dist/build.js",
   "scripts": {
     "build": "npm run clean && webpack",
