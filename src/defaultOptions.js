@@ -89,6 +89,12 @@ export const defaultMarkerOptions = {
   offset: [0, 0],
 
   /**
+   * Whether the marker should have small circular shadow, marking the location
+   * Only applicable when type is marker or image
+   */
+  enableShadow: true,
+
+  /**
    * Whether the marker should have a stroked line
    * Only applicable when type is circle
    */

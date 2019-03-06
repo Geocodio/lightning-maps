@@ -30,7 +30,7 @@
     markerIcon.src = 'https://unpkg.com/svg-icon@0.8.2/dist/trimmed-svg/metro/camera.svg';
 
     markerIcon.onload = function () {
-      map.addMarker(new LightningMaps.Marker([38.87, -77.16], { image: markerIcon, type: 'image' }));
+      map.addMarker(new LightningMaps.Marker([38.87, -77.16], { image: markerIcon, type: 'image', enableShadow: false }));
     };
 
     map.addMarker(new LightningMaps.Marker([38.882666, -77.170150]));

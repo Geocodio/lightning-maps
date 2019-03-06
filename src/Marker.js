@@ -118,6 +118,8 @@ export default class Marker {
   }
 
   renderMarker(context, position) {
+    this.renderShadow(context, position);
+
     context.fillStyle = this.options.color;
     context.strokeStyle = this.options.color;
 
@@ -146,11 +148,26 @@ export default class Marker {
 
   renderImage(context, position) {
     if (this.options.image) {
+      this.renderShadow(context, position);
+
       const size = this.size;
       const x = position[0] - size[0] / 2 + this.offset[0];
       const y = position[1] - size[1] / 2 + this.offset[1];
 
       context.drawImage(this.options.image, x, y, size[0], size[1]);
+    }
+  }
+
+  renderShadow(context, position) {
+    if (this.options.enableShadow) {
+      context.save();
+      context.fillStyle = context.strokeStyle = context.shadowColor = 'rgb(227, 213, 217)';
+      context.shadowBlur = 5;
+
+      context.beginPath();
+      context.ellipse(position[0], position[1] + 2, 5, 2.5, Math.PI, 0, 2 * Math.PI);
+      context.fill();
+      context.restore();
     }
   }
 }
