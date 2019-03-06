@@ -25,9 +25,20 @@ class Map extends Component {
     this.initLightningMap()
   }
 
-  componentDidUpdate (prevProps, prevState, snapshot) {
-    if (this.props.width !== prevProps.width || this.props.height !== prevProps.height) {
+  componentDidUpdate (prevProps) {
+    const sizeChanged = this.props.width !== prevProps.width || this.props.height !== prevProps.height
+    const sourceChanged = this.props.source !== prevProps.source
+
+    if (sizeChanged || sourceChanged) {
       this.initLightningMap()
+    }
+
+    if (this.props.center !== prevProps.center) {
+      this.lightningMap.setCenter(this.props.center)
+    }
+
+    if (this.props.zoom !== prevProps.zoom) {
+      this.lightningMap.setZoom(this.props.zoom)
     }
   }
 
@@ -54,14 +65,10 @@ class Map extends Component {
       ? this.props.children
       : [this.props.children]
 
-    const lightningMap = this.lightningMap
-
-    if (!lightningMap) {
-      return
+    if (this.lightningMap) {
+      this.renderMarkers(children, this.lightningMap)
+      this.renderPolygons(children, this.lightningMap)
     }
-
-    this.renderMarkers(children, lightningMap)
-    this.renderPolygons(children, lightningMap)
   }
 
   renderMarkers (children, lightningMap) {
