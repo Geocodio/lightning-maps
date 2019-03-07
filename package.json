@@ -1,25 +1,6 @@
 {
   "name": "lightning-maps",
   "description": "Lightweight, dependency-free slippy map renderer",
-  "main": "lib/LightningMaps.js",
-  "scripts": {
-    "build": "webpack --env dev && webpack --env build && cp lib/LightningMaps.min.js docs/LightningMaps.js && npm run test",
-    "dev": "rm -f docs/LightningMaps.js && webpack-dev-server --progress --colors --watch --env dev",
-    "test": "mocha --compilers js:@babel/register --colors ./test/*.spec.js",
-    "test:watch": "mocha --compilers js:@babel/register --colors -w ./test/*.spec.js",
-    "bump": "npx standard-version"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/geocodio/lightning-maps.git"
-  },
-  "keywords": [
-    "slippy-map",
-    "maps",
-    "mapping",
-    "osm",
-    "openstreetmap"
-  ],
   "author": "Mathias Hansen",
   "license": "MIT",
   "bugs": {
@@ -27,33 +8,6 @@
   },
   "homepage": "https://github.com/geocodio/lightning-maps",
   "devDependencies": {
-    "@babel/cli": "^7.2.3",
-    "@babel/core": "^7.2.2",
-    "@babel/preset-env": "^7.3.1",
-    "@babel/register": "^7.0.0",
-    "babel-eslint": "^10.0.1",
-    "babel-loader": "^8.0.5",
-    "chai": "^4.1.2",
-    "eslint": "^5.0.1",
-    "eslint-loader": "^2.0.0",
-    "jsdom": "11.11.0",
-    "jsdom-global": "3.0.2",
-    "mocha": "^4.0.1",
-    "standard-version": "^4.4.0",
-    "webpack": "^4.12.2",
-    "webpack-cli": "^3.0.8",
-    "webpack-dev-server": "^3.1.11",
-    "yargs": "^10.0.3"
-  },
-  "dependencies": {
-    "robust-point-in-polygon": "^1.0.3",
-    "topojson-client": "^3.0.0"
-  },
-  "version": "0.0.19",
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ]
+    "lerna": "^3.13.1"
+  }
 }
