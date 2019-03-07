@@ -13,6 +13,10 @@ module.exports = {
     publicPath: '/dist/',
     umdNamedDefine: true
   },
+  devServer: {
+    contentBase: './examples',
+    port: 8091
+  },
   module: {
     rules: [
       {
