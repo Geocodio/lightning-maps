@@ -26,26 +26,6 @@
     "url": "https://github.com/geocodio/lightning-maps/issues"
   },
   "homepage": "https://github.com/geocodio/lightning-maps",
-  "devDependencies": {
-    "@babel/cli": "^7.2.3",
-    "@babel/core": "^7.2.2",
-    "@babel/preset-env": "^7.3.1",
-    "@babel/register": "^7.0.0",
-    "babel-eslint": "^10.0.1",
-    "babel-loader": "^8.0.5",
-    "chai": "^4.1.2",
-    "eslint": "^5.0.1",
-    "eslint-loader": "^2.0.0",
-    "jsdom": "11.11.0",
-    "jsdom-global": "3.0.2",
-    "lerna": "^3.13.1",
-    "mocha": "^4.0.1",
-    "standard-version": "^4.4.0",
-    "webpack": "^4.12.2",
-    "webpack-cli": "^3.0.8",
-    "webpack-dev-server": "^3.1.11",
-    "yargs": "^10.0.3"
-  },
   "dependencies": {
     "robust-point-in-polygon": "^1.0.3",
     "topojson-client": "^3.0.0"
