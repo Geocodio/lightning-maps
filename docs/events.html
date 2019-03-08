@@ -38,6 +38,10 @@
       console.log('You hovered ' + feature.properties.NAME);
     };
 
+    map.onPolygonClicked = function (feature, meta) {
+      console.log('You clicked ' + JSON.stringify(feature.properties) + ' ' + JSON.stringify(meta));
+    };
+
     map.onMapCenterChanged = function (center) {
       console.log('New center is ' + center.join(', '));
     };
@@ -49,7 +53,7 @@
     fetch('https://gistcdn.githack.com/mpmckenna8/af23032b41f0ea1212563b523e859228/raw/0cbceeedf57d9bf2e723f57d19e923591b9249a0/schoolsca.topojson')
       .then(response => response.json())
       .then(json => {
-        map.addPolygon(new LightningMaps.Polygon(json, 'caschools'));
+        map.addPolygon(new LightningMaps.Polygon(json, 'caschools', {}, null, { id: 1 }));
       })
       .catch(err => console.log(`Could not load polygon: ${err.message || err}`));
 

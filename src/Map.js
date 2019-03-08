@@ -524,9 +524,12 @@ export default class Map {
 
       const mapState = this.snapshotMapState();
 
-      polygons = this.state.polygons.map(polygon =>
-        polygon.handleMouseOver(null, mapState, this.state.mousePosition)
-      ).filter(polygon => polygon.length > 0);
+      polygons = this.state.polygons.map(polygon => {
+        return {
+          polygon,
+          activatedAreas: polygon.handleMouseOver(null, mapState, this.state.mousePosition)
+        };
+      }).filter(polygon => polygon.activatedAreas.length > 0);
 
       polygonIsHover = polygons.length > 0;
 
@@ -536,7 +539,7 @@ export default class Map {
           : this.onPolygonHover;
 
         if (eventHandler) {
-          polygons.map(polygon => polygon.map(item => eventHandler(item)));
+          polygons.map(polygon => polygon.activatedAreas.map(item => eventHandler(item, polygon.polygon.meta)));
         }
       }
     }
