@@ -48,6 +48,7 @@ const config = {
   },
   devServer: {
     contentBase: './docs',
+    port: 9000
   }
 };
 

@@ -60,10 +60,11 @@ yarn run test:watch
 ```
 
 ### Development urls:
-* [http://localhost:8080/simple.html](http://localhost:8080/simple.html)
-* [http://localhost:8080/markers.html](http://localhost:8080/markers.html)
-* [http://localhost:8080/polygons.html](http://localhost:8080/polygons.html)
-* [http://localhost:8080/events.html](http://localhost:8080/events.html)
+* [http://localhost:9000/simple.html](http://localhost:9000/simple.html)
+* [http://localhost:9000/markers.html](http://localhost:9000/markers.html)
+* [http://localhost:9000/polygons.html](http://localhost:9000/polygons.html)
+* [http://localhost:9000/events.html](http://localhost:9000/events.html)
+* [http://localhost:9000/performance.html](http://localhost:9000/performance.html)
 
 ### Build library for distribution
 
