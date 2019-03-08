@@ -1,9 +1,10 @@
 import { defaultMarkerOptions } from './defaultOptions';
 
 export default class Marker {
-  constructor(coords, options = {}) {
+  constructor(coords, options = {}, meta = {}) {
     this._coords = coords;
     this._options = Object.assign({}, defaultMarkerOptions, options);
+    this._meta = meta;
   }
 
   get coords() {
@@ -12,6 +13,10 @@ export default class Marker {
 
   get options() {
     return this._options;
+  }
+
+  get meta() {
+    return this._meta;
   }
 
   get size() {
