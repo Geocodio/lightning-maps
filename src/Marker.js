@@ -52,7 +52,7 @@ export default class Marker {
         ];
 
       case 'image':
-        return this.options.offset;
+        return this.options.offset || [0, 0];
 
       default:
         return [0, 0];
