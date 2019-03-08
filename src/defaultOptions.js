@@ -59,7 +59,13 @@ export const defaultMapOptions = {
    * When debug mode is enabled, additional rendering artifacts are drawn. Should only be used in
    * conjuction with development of the library
    */
-  debug: false
+  debug: false,
+
+  /**
+   * Whether debug logs should be enabled. Should only be used in conjuction with development
+   * of the library
+   */
+  enableLogging: false
 };
 
 export const defaultMarkerOptions = {

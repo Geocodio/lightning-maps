@@ -414,6 +414,8 @@ export default class Map {
   }
 
   draw() {
+    this.options.enableLogging && console.log(this.snapshotMapState());
+
     this.updateMoveOffset();
     this.updateZoom();
     this.state.tileLayers.forEach(tileLayer => tileLayer.calculateGrid());
