@@ -4,9 +4,10 @@ import { feature } from 'topojson-client';
 import classifyPoint from 'robust-point-in-polygon';
 
 export default class Polygon {
-  constructor(json, objectName, options = {}, hoverOptions = null) {
+  constructor(json, objectName, options = {}, hoverOptions = null, meta = {}) {
     this._options = Object.assign({}, defaultPolygonOptions, options);
     this._hoverOptions = Object.assign({}, defaultPolygonOptions, defaultPolygonHoverOptions, hoverOptions);
+    this._meta = meta;
     this.globalIndex = this.prepareGlobalDataObject();
 
     if (!objectName) {
@@ -26,6 +27,10 @@ export default class Polygon {
 
   get hoverOptions() {
     return this._hoverOptions;
+  }
+
+  get meta() {
+    return this._meta;
   }
 
   get geometry() {
