@@ -300,7 +300,6 @@ export default class Map {
       const targetHasBeenReached = this.state.moveOffset.join(',') === targetMoveOffset.join(',');
 
       if (targetHasBeenReached) {
-        this.state.targetMoveOffset = this.state.moveOffset;
         this.state.targetMoveOffsetIsCoord = false;
 
         this.updateCenter();
