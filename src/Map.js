@@ -94,7 +94,7 @@ export default class Map {
   }
 
   setTargetMoveOffset(x, y, animated = true) {
-    this.onMapPanned && this.onMapPanned(this.state.moveOffset);
+    this.onMapPanned && this.onMapPanned([x, y]);
 
     if (animated) {
       this.state.moveAnimationStart = window.performance.now();
