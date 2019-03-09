@@ -94,6 +94,8 @@ export default class Map {
   }
 
   setTargetMoveOffset(x, y, animated = true) {
+    this.onMapPanned && this.onMapPanned(this.state.moveOffset);
+
     if (animated) {
       this.state.moveAnimationStart = window.performance.now();
 
@@ -297,8 +299,6 @@ export default class Map {
           this.state.moveOffset[1] + (targetMoveOffset[1] - this.state.moveOffset[1]) * percentage
         ];
       }
-
-      this.onMapPanned && this.onMapPanned(this.state.moveOffset);
 
       const targetHasBeenReached = this.state.moveOffset.join(',') === targetMoveOffset.join(',');
 
