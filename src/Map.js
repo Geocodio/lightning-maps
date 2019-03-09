@@ -30,6 +30,7 @@ export default class Map {
     this.onPolygonHover = null;
     this.onMapCenterChanged = null;
     this.onMapZoomChanged = null;
+    this.onMapPanned = null;
 
     this.draw = this.draw.bind(this);
     window.requestAnimationFrame(this.draw);
@@ -280,9 +281,9 @@ export default class Map {
       )
       : this.state.targetMoveOffset;
 
-    const targetMoveOffsetChanged = this.state.moveOffset.join(',') !== targetMoveOffset.join(',');
+    const moveOffsetNeedsToBeUpdated = this.state.moveOffset.join(',') !== targetMoveOffset.join(',');
 
-    if (targetMoveOffsetChanged) {
+    if (moveOffsetNeedsToBeUpdated) {
       const timestamp = window.performance.now();
 
       const progress = Math.max(timestamp - this.state.moveAnimationStart, 0);
@@ -296,6 +297,8 @@ export default class Map {
           this.state.moveOffset[1] + (targetMoveOffset[1] - this.state.moveOffset[1]) * percentage
         ];
       }
+
+      this.onMapPanned && this.onMapPanned(this.state.moveOffset);
 
       const targetHasBeenReached = this.state.moveOffset.join(',') === targetMoveOffset.join(',');
 
