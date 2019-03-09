@@ -280,7 +280,7 @@ export default class Map {
       )
       : this.state.targetMoveOffset;
 
-    const targetMoveOffsetChanged = this.state.moveOffset !== targetMoveOffset;
+    const targetMoveOffsetChanged = this.state.moveOffset.join(',') !== targetMoveOffset.join(',');
 
     if (targetMoveOffsetChanged) {
       const timestamp = window.performance.now();
