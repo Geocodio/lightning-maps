@@ -290,9 +290,6 @@ export default class Map {
 
       if (percentage >= 0.99) {
         this.state.moveOffset = targetMoveOffset;
-
-        this.state.targetMoveOffset = this.state.moveOffset;
-        this.state.targetMoveOffsetIsCoord = false;
       } else {
         this.state.moveOffset = [
           this.state.moveOffset[0] + (targetMoveOffset[0] - this.state.moveOffset[0]) * percentage,
@@ -300,9 +297,12 @@ export default class Map {
         ];
       }
 
-      const targetHasBeenReached = this.state.moveOffset === targetMoveOffset;
+      const targetHasBeenReached = this.state.moveOffset.join(',') === targetMoveOffset.join(',');
 
       if (targetHasBeenReached) {
+        this.state.targetMoveOffset = this.state.moveOffset;
+        this.state.targetMoveOffsetIsCoord = false;
+
         this.updateCenter();
       }
     }
