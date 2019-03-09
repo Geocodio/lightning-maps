@@ -271,7 +271,16 @@ export default class Map {
   }
 
   updateMoveOffset() {
-    const targetMoveOffsetChanged = this.state.moveOffset !== this.state.targetMoveOffset;
+    const targetMoveOffset = this.state.targetMoveOffsetIsCoord
+      ? TileConversion.latLonToPixel(
+        this.state.targetMoveOffset,
+        this.options.center,
+        this.options.zoom,
+        this.options.tileSize
+      )
+      : this.state.targetMoveOffset;
+
+    const targetMoveOffsetChanged = this.state.moveOffset !== targetMoveOffset;
 
     if (targetMoveOffsetChanged) {
       const timestamp = window.performance.now();
@@ -279,19 +288,11 @@ export default class Map {
       const progress = Math.max(timestamp - this.state.moveAnimationStart, 0);
       const percentage = this.easeOutQuad(progress / this.options.animationDurationMs);
 
-      let targetMoveOffset = this.state.targetMoveOffset;
-
-      if (this.state.targetMoveOffsetIsCoord) {
-        targetMoveOffset = TileConversion.latLonToPixel(
-          this.state.targetMoveOffset,
-          this.options.center,
-          this.options.zoom,
-          this.options.tileSize
-        );
-      }
-
       if (percentage >= 0.99) {
         this.state.moveOffset = targetMoveOffset;
+
+        this.state.targetMoveOffset = this.state.moveOffset;
+        this.state.targetMoveOffsetIsCoord = false;
       } else {
         this.state.moveOffset = [
           this.state.moveOffset[0] + (targetMoveOffset[0] - this.state.moveOffset[0]) * percentage,
