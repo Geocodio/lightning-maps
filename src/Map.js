@@ -288,7 +288,7 @@ export default class Map {
       const progress = Math.max(timestamp - this.state.moveAnimationStart, 0);
       const percentage = this.easeOutQuad(progress / this.options.animationDurationMs);
 
-      if (percentage >= 0.99) {
+      if (percentage >= 0.99 || percentage < 0) {
         this.state.moveOffset = targetMoveOffset;
       } else {
         this.state.moveOffset = [
