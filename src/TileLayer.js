@@ -91,9 +91,9 @@ export default class TileLayer {
       const tileUrl = this.map.options.source(Math.floor(tile.x), Math.floor(tile.y), tile.zoom);
 
       this.map.state.tiles[tile.id] = new Image();
+      this.map.state.tiles[tile.id].crossOrigin = 'Anonymous';
       this.map.state.tiles[tile.id].tileId = tile.id;
       this.map.state.tiles[tile.id].src = tileUrl;
-      this.map.state.tiles[tile.id].crossOrigin = 'anonymous';
       this.map.state.tiles[tile.id].loaded = false;
       this.map.state.tiles[tile.id].onload = () => {
         this.map.state.tiles[tile.id].loaded = true;
