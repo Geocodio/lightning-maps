@@ -59,8 +59,7 @@ export default class Map {
       ],
       mousePosition: { x: 0, y: 0},
       forceRedraw: false,
-      forceRerenderMarkers: false,
-      renderControls: true
+      forceRerenderMarkers: false
     };
   }
 
@@ -92,10 +91,6 @@ export default class Map {
     this.state.moveAnimationStart = window.performance.now();
     this.state.targetMoveOffset = coord;
     this.state.targetMoveOffsetIsCoord = true;
-  }
-
-  enableControls(renderControls) {
-    this.state.renderControls = renderControls;
   }
 
   setTargetMoveOffset(x, y, animated = true) {
@@ -248,12 +243,25 @@ export default class Map {
         this.state.mouseVelocities.push([now, velocity]);
 
         this.setTargetMoveOffset(x, y, false);
+
         this.state.lastMouseMoveEvent = window.performance.now();
       } else {
         this.handleMouseEventInteraction(event, 'mousemove');
       }
 
       return false;
+    });
+
+    this.canvas.addEventListener('mouseleave', event => {
+      if (this.options.hideControlsUntilActive) {
+        this.state.showControls = false;
+      }
+    });
+
+    this.canvas.addEventListener('mouseenter', event => {
+      if (this.options.hideControlsUntilActive) {
+        this.state.showControls = true;
+      }
     });
   }
 
@@ -590,7 +598,7 @@ export default class Map {
   }
 
   renderControls() {
-    if (this.state.renderControls) {
+    if (this.state.showControls) {
       this.getControlObjects().map(item => this.renderControl(item.bounds, item.label));
     }
   }

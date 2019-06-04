@@ -8,6 +8,11 @@ export const defaultMapOptions = {
   attribution: '© OpenStreetMap contributors',
 
   /**
+   * Enable to make map controls visible only when mouse is hovered over the canvas
+   */
+  hideControlsUntilActive: true,
+
+  /**
    * Width and height in pixels for each tile, you most likely do not want to change this.
    */
   tileSize: 256,
