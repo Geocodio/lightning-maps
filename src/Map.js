@@ -515,6 +515,8 @@ export default class Map {
         .filter(item => this.isMouseOverObject(item.bounds))
       : [];
 
+    const firstMarker = markers[0] || null;
+
     if (name === 'mouseup') {
       if (controlObjects.length > 0) {
         const controlObject = controlObjects[0];
@@ -524,16 +526,16 @@ export default class Map {
           : this.options.zoom - 1);
       }
 
-      if (this.onMarkerClicked) {
-        markers.map(item => this.onMarkerClicked(item.marker));
+      if (this.onMarkerClicked && firstMarker) {
+        this.onMarkerClicked(firstMarker.marker);
       }
     } else {
-      if (this.onMarkerHover) {
-        markers.map(item => this.onMarkerHover(item.marker));
+      if (this.onMarkerHover && firstMarker) {
+        this.onMarkerHover(firstMarker.marker);
       }
     }
 
-    let controlsOrMarkersIsHover = controlObjects.length > 0 || markers.length > 0;
+    let controlsOrMarkersIsHover = controlObjects.length > 0 || firstMarker;
 
     let polygonIsHover = false;
 
