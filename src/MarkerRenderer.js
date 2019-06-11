@@ -1,7 +1,7 @@
 import TileConversion from './TileConversion';
 
 export default class MarkerRenderer {
-  constructor() {
+  constructor(renderMode) {
     this._markers = [];
     this.offscreenCanvas = null;
     this.renderedMapCenter = null;
@@ -87,7 +87,7 @@ export default class MarkerRenderer {
       marker.render(context, [
         mapState.canvasCenter[0] - position[0],
         mapState.canvasCenter[1] - position[1]
-      ]);
+      ], mapState.zoom);
     });
   }
 

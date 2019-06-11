@@ -13,6 +13,13 @@ export const defaultMapOptions = {
   hideControlsUntilActive: true,
 
   /**
+   * Define how markers should be rendered:
+   * standard: Render markers individually at all zoom levels
+   * cluster: Group markers into clusters at lower zoom levels
+   */
+  markerRenderMode: 'standard',
+
+  /**
    * Width and height in pixels for each tile, you most likely do not want to change this.
    */
   tileSize: 256,
@@ -70,7 +77,7 @@ export const defaultMapOptions = {
    * Whether debug logs should be enabled. Should only be used in conjuction with development
    * of the library
    */
-  enableLogging: false
+  log: false
 };
 
 export const defaultMarkerOptions = {

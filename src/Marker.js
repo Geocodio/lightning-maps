@@ -64,7 +64,7 @@ export default class Marker {
     }
   }
 
-  render(context, position) {
+  render(context, position, mapZoom) {
     let renderFunction = null;
 
     switch (this.options.type) {
@@ -89,7 +89,7 @@ export default class Marker {
       throw new Error(`Unsupported marker type: "${this.options.type}"`);
     } else {
       renderFunction = renderFunction.bind(this);
-      renderFunction(context, position);
+      renderFunction(context, position, mapZoom);
     }
   }
 
@@ -122,8 +122,8 @@ export default class Marker {
     context.restore();
   }
 
-  renderMarker(context, position) {
-    this.renderShadow(context, position);
+  renderMarker(context, position, mapZoom) {
+    this.renderShadow(context, position, mapZoom);
 
     context.fillStyle = this.options.color;
     context.strokeStyle = this.options.color;
@@ -151,9 +151,9 @@ export default class Marker {
     context.restore();
   }
 
-  renderImage(context, position) {
+  renderImage(context, position, mapZoom) {
     if (this.options.image) {
-      this.renderShadow(context, position);
+      this.renderShadow(context, position, mapZoom);
 
       const size = this.size;
       const x = position[0] - size[0] / 2 + this.offset[0];
@@ -163,8 +163,8 @@ export default class Marker {
     }
   }
 
-  renderShadow(context, position) {
-    if (this.options.enableShadow) {
+  renderShadow(context, position, mapZoom) {
+    if (this.options.enableShadow && mapZoom > 8) {
       context.save();
       context.fillStyle = context.strokeStyle = context.shadowColor = 'rgb(227, 213, 217)';
       context.shadowBlur = 5;

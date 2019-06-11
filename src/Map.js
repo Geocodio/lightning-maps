@@ -52,7 +52,7 @@ export default class Map {
       scale: 1,
       lastMouseMoveEvent: null,
       mouseVelocities: [],
-      markerRenderer: new MarkerRenderer(),
+      markerRenderer: new MarkerRenderer(this.options.markerRenderMode),
       polygons: [],
       tileLayers: [
         new TileLayer(this)
@@ -430,7 +430,7 @@ export default class Map {
   }
 
   draw() {
-    this.options.enableLogging && console.log(this.snapshotMapState());
+    this.options.log && console.log(this.snapshotMapState());
 
     this.updateMoveOffset();
     this.updateZoom();
