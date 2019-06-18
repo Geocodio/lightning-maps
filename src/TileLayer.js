@@ -6,7 +6,6 @@ export default class TileLayer {
   constructor(map, tilesZoomLevel = null) {
     this.map = map;
     this.tilesZoomLevel = tilesZoomLevel;
-    this.shouldBeDeleted = false;
 
     this.context = map.context;
 

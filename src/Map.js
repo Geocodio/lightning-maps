@@ -72,7 +72,6 @@ export default class Map {
       zoom = Math.round(zoom);
 
       this.state.tileLayers.push(new TileLayer(this, zoom));
-      // this.state.tileLayers[0].tilesZoomLevel = this.options.zoom;
 
       this.state.lastZoomEventActionTime = window.performance.now();
       this.state.zoomAnimationStart = window.performance.now();
@@ -365,8 +364,6 @@ export default class Map {
         this.state.tileLayers.shift();
         this.state.tileLayers[0].tilesZoomLevel = null;
 
-        // this.state.tileLayers[this.state.tileLayers.length - 1].shouldBeDeleted = true;
-
         this.onMapZoomChanged && this.onMapZoomChanged(this.options.zoom);
       }
     } else {
@@ -438,14 +435,6 @@ export default class Map {
     this.garbageCollect();
 
     if (this.shouldRedraw()) {
-      // Delete tile layers that are ready for deletion and mostly loaded
-      /*
-      this.state.tileLayers = this.state.tileLayers
-        .filter(tileLayer => !(tileLayer.shouldBeDeleted && tileLayer.loadedPercentage() >= 0.9));
-
-      console.log(this.state.tileLayers.length);
-      */
-
       if (this.state.tileLayers.length > 0) {
         // Only draw the top layer
         this.state.tileLayers[0].drawTiles(this.state.scale);
