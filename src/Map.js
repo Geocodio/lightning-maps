@@ -333,7 +333,7 @@ export default class Map {
     this.setTargetMoveOffset(0, 0, false);
     this.options.center = latLon;
 
-    this.onMapCenterChanged && this.onMapCenterChanged(this.options.center);
+    this.onMapCenterChanged && this.onMapCenterChanged(this.options.zoom, this.options.center);
   }
 
   updateZoom() {
@@ -364,7 +364,7 @@ export default class Map {
         this.state.tileLayers.shift();
         this.state.tileLayers[0].tilesZoomLevel = null;
 
-        this.onMapZoomChanged && this.onMapZoomChanged(this.options.zoom);
+        this.onMapZoomChanged && this.onMapZoomChanged(this.options.zoom, this.options.center);
       }
     } else {
       this.state.scale = 1;
