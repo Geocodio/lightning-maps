@@ -165,7 +165,12 @@ export const defaultPolygonOptions = {
    * What color should the polygon be filled with?
    * Supports hex, rgb and rgba values
    */
-  fillStyle: 'rgba(0, 0, 0, 0.2)'
+  fillStyle: 'rgba(0, 0, 0, 0.2)',
+
+  /**
+   * When a polygon is set to be non-interactive it will not have a hover state or emit hover events
+   */
+  interactive: true
 };
 
 export const defaultPolygonHoverOptions = {

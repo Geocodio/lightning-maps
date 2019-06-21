@@ -67,7 +67,7 @@ export default class Polygon {
   handleMouseOver(context, mapState, mousePosition) {
     const currentlyZooming = Math.round(mapState.zoom) !== mapState.zoom;
 
-    if (!this.geometry || !this.projectedGeometry || currentlyZooming) {
+    if (!this.options.interactive || !this.geometry || !this.projectedGeometry || currentlyZooming) {
       return [];
     }
 
