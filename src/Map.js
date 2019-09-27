@@ -255,6 +255,8 @@ export default class Map {
       if (this.options.hideControlsUntilActive) {
         this.state.showControls = false;
       }
+
+      this.updateMousePosition(null);
     });
 
     this.canvas.addEventListener('mouseenter', event => {
@@ -273,12 +275,19 @@ export default class Map {
   }
 
   updateMousePosition(event) {
-    const rect = this.canvas.getBoundingClientRect();
+    if (event) {
+      const rect = this.canvas.getBoundingClientRect();
 
-    this.state.mousePosition = {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
-    };
+      this.state.mousePosition = {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+      };
+    } else {
+      this.state.mousePosition = {
+        x: 0,
+        y: 0
+      };
+    }
   }
 
   easeOutQuad(time) {
