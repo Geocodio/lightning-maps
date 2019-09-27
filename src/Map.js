@@ -57,7 +57,7 @@ export default class Map {
       tileLayers: [
         new TileLayer(this)
       ],
-      mousePosition: { x: 0, y: 0},
+      mousePosition: { x: -1, y: -1},
       forceRedraw: false,
       forceRerenderMarkers: false
     };
@@ -284,8 +284,8 @@ export default class Map {
       };
     } else {
       this.state.mousePosition = {
-        x: 0,
-        y: 0
+        x: -1,
+        y: -1
       };
     }
   }
