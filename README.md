@@ -48,7 +48,7 @@ map.addMarker(new LightningMaps.Marker([38.882666, -77.170150]))
 
 ### 4. Success! You now have a map
 
-![Example](docs/screenshots/marker-single.png)
+![Example](docs/screenshots/markers.png)
 
 ## Development
 
