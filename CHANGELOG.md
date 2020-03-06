@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.0.38"></a>
+## [0.0.38](https://github.com/geocodio/lightning-maps/compare/v0.0.37...v0.0.38) (2020-03-06)
+
+
+### Bug Fixes
+
+* **performance:** Removed shouldRedraw check as it actually makes performance worse ([a3de9a8](https://github.com/geocodio/lightning-maps/commit/a3de9a8))
+
+
+
 <a name="0.0.37"></a>
 ## [0.0.37](https://github.com/geocodio/lightning-maps/compare/v0.0.36...v0.0.37) (2019-09-27)
 
