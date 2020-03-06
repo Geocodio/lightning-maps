@@ -58,7 +58,6 @@ export default class Map {
         new TileLayer(this)
       ],
       mousePosition: { x: -1, y: -1},
-      forceRedraw: false,
       forceRerenderMarkers: false
     };
   }
@@ -417,24 +416,6 @@ export default class Map {
     return 1000;
   }
 
-  shouldRedraw() {
-    if (this.state.forceRedraw) {
-      this.state.forceRedraw = false;
-
-      return true;
-    }
-
-    const drawState = JSON.stringify([this.state, this.options]);
-
-    if (this.lastDrawState !== drawState) {
-      this.lastDrawState = drawState;
-
-      return true;
-    }
-
-    return false;
-  }
-
   draw() {
     this.options.log && console.log(this.snapshotMapState());
 
@@ -443,19 +424,17 @@ export default class Map {
     this.state.tileLayers.forEach(tileLayer => tileLayer.calculateGrid());
     this.garbageCollect();
 
-    if (this.shouldRedraw()) {
-      if (this.state.tileLayers.length > 0) {
-        // Only draw the top layer
-        this.state.tileLayers[0].drawTiles(this.state.scale);
-      }
-
-      const mapState = this.snapshotMapState();
-
-      this.renderPolygons(mapState);
-      this.renderMarkers(mapState);
-      this.renderControls();
-      this.renderAttribution();
+    if (this.state.tileLayers.length > 0) {
+      // Only draw the top layer
+      this.state.tileLayers[0].drawTiles(this.state.scale);
     }
+
+    const mapState = this.snapshotMapState();
+
+    this.renderPolygons(mapState);
+    this.renderMarkers(mapState);
+    this.renderControls();
+    this.renderAttribution();
 
     window.requestAnimationFrame(this.draw);
   }
@@ -674,13 +653,11 @@ export default class Map {
 
   addMarker(marker) {
     this.state.markerRenderer.markers.push(marker);
-    this.state.forceRedraw = true;
     this.state.forceRerenderMarkers = true;
   }
 
   setMarkers(markers) {
     this.state.markerRenderer.markers = markers;
-    this.state.forceRedraw = true;
     this.state.forceRerenderMarkers = true;
   }
 
